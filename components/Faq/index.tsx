@@ -5,8 +5,8 @@ const Faq = () => {
         Frequently Asked Questions
       </h3>
       <div className="my-6">
-        <div className="rounded-t-2xl bg-teal-600/80 flex w-full cursor-pointer select-none items-center justify-between border-2 border-teal-600/30 px-4 py-4 text-gray-300 transition duration-300 hover:border-teal-600/80 hover:text-white">
-          <h4 className="text-lg font-medium">What is Octo Space?</h4>
+        <div className="rounded-t-2xl bg-violet-700/80 flex w-full cursor-pointer select-none items-center justify-between border-2 border-teal-600/30 px-4 py-4 text-gray-300 transition duration-300 hover:border-teal-600/80 hover:text-white">
+          <h4 className="text-lg font-medium">What is Natured Developers?</h4>
           <svg
             stroke="currentColor"
             fill="currentColor"
@@ -19,17 +19,18 @@ const Faq = () => {
             <path d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" />
           </svg>
         </div>
-        <div className="inline-flex w-full rounded-b-2xl border-x-2 border-b-2 border-dashed border-teal-600/30 px-4 py-4 text-gray-300">
+        <div className="inline-flex w-full rounded-b-2xl border-x-2 border-b-2 border-dashed border-neutral-900/30 px-4 py-4 text-gray-600">
           <h5>
-            Octo Space is a collection of 1000+ amazing figures with different
-            attributes and styles hosted on Ethereum Blockchain. You can buy
-            these figures on OpenSea.
+            Natured Developers is a collection of 1000+ amazing figures with
+            different attributes and styles hosted on Ethereum.
           </h5>
         </div>
       </div>
       <div className="my-6">
-        <div className="rounded-t-2xl bg-teal-600/80 flex w-full cursor-pointer select-none items-center justify-between border-2 border-teal-600/30 px-4 py-4 text-gray-300 transition duration-300 hover:border-teal-600/80 hover:text-white">
-          <h4 className="text-lg font-medium">How much do they Cost?</h4>
+        <div className="rounded-t-2xl bg-violet-700/80 flex w-full cursor-pointer select-none items-center justify-between border-2 border-gray-900/30 px-4 py-4 text-gray-300 transition duration-300 hover:border-teal-600/80 hover:text-white">
+          <h4 className="text-lg font-medium">
+            How much does it cost to mint?
+          </h4>
           <svg
             stroke="currentColor"
             fill="currentColor"
@@ -42,16 +43,12 @@ const Faq = () => {
             <path d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" />
           </svg>
         </div>
-        <div className="inline-flex w-full rounded-b-2xl border-x-2 border-b-2 border-dashed border-teal-600/30 px-4 py-4 text-gray-300">
-          <h5>
-            Octo Space is a collection of 1000+ amazing figures with different
-            attributes and styles hosted on Ethereum Blockchain. You can buy
-            these figures on OpenSea.
-          </h5>
+        <div className="inline-flex w-full rounded-b-2xl border-x-2 border-b-2 border-dashed border-teal-600/30 px-4 py-4 text-gray-600">
+          <h5>0.01 Ether</h5>
         </div>
       </div>
       <div className="my-6">
-        <div className="rounded-t-2xl bg-teal-600/80 flex w-full cursor-pointer select-none items-center justify-between border-2 border-teal-600/30 px-4 py-4 text-gray-300 transition duration-300 hover:border-teal-600/80 hover:text-white">
+        <div className="rounded-t-2xl bg-violet-700/80 flex w-full cursor-pointer select-none items-center justify-between border-2 border-teal-600/30 px-4 py-4 text-gray-300 transition duration-300 hover:border-teal-600/80 hover:text-white">
           <h4 className="text-lg font-medium">
             Can I buy an NFT from Opensea?
           </h4>
@@ -67,12 +64,8 @@ const Faq = () => {
             <path d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" />
           </svg>
         </div>
-        <div className="inline-flex w-full rounded-b-2xl border-x-2 border-b-2 border-dashed border-teal-600/30 px-4 py-4 text-gray-300">
-          <h5>
-            Octo Space is a collection of 1000+ amazing figures with different
-            attributes and styles hosted on Ethereum Blockchain. You can buy
-            these figures on OpenSea.
-          </h5>
+        <div className="inline-flex w-full rounded-b-2xl border-x-2 border-b-2 border-dashed border-teal-600/30 px-4 py-4 text-gray-600">
+          <h5>Lorem ipsum</h5>
         </div>
       </div>
     </section>

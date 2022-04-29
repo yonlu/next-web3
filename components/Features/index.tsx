@@ -7,7 +7,7 @@ const Features = () => {
         <div className="animation-delay-4000 absolute top-44 left-44 h-72 w-72 animate-blob rounded-full bg-indigo-300/30 mix-blend-overlay blur-2xl filter" />
         <div className="flex flex-1 flex-col justify-center">
           <h3 className="mb-4 text-center text-3xl font-semibold underline decoration-indigo-500/80 lg:text-left xl:text-4xl">
-            1000+ FIgures Collection
+            1000+ Figures Collection
           </h3>
           <p className="text-center text-gray-300 lg:text-left">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -36,7 +36,7 @@ const Features = () => {
               right: 0,
             }}
           >
-            <img
+            {/* <img
               alt="1000+ FIgures Collection Image"
               src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
               decoding="async"
@@ -60,7 +60,7 @@ const Features = () => {
                 maxHeight: '100%',
                 objectFit: 'contain',
               }}
-            />
+            /> */}
           </span>
         </div>
       </div>

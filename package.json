@@ -13,6 +13,8 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@ethersproject/providers": "^5.6.4",
+    "@headlessui/react": "^1.6.0",
+    "@heroicons/react": "^1.0.6",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
     "@web3-ui/components": "^0.12.0",

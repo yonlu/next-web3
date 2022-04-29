@@ -1,222 +1,259 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Flex,
-  Heading,
-  Link,
-  Spinner,
-} from '@chakra-ui/react';
-import type { NextPage } from 'next';
-import { useCallback, useEffect, useState } from 'react';
-import { ConnectWallet, useWallet, useWriteContract } from '@web3-ui/core';
-import { BigNumber, BigNumberish, ethers } from 'ethers';
-import base64 from 'base-64';
-import Image from 'next/image';
-import { Address, NFTCard, NFTData } from '@web3-ui/components';
-
-import styles from '../styles/Home.module.css';
-import twitterLogo from '../assets/twitter-logo.svg';
-import myEpicNft from '../utils/myEpicNft.json';
+import { NextPage } from 'next';
+import { useWallet, useWriteContract } from '@web3-ui/core';
 import { TransactionResponse } from '@ethersproject/providers';
+import Image from 'next/image';
+import { Faq, Footer, Header } from '../components';
+import myEpicNft from '../utils/myEpicNft.json';
+import cardTwo from '../public/card2.png';
+import cardThree from '../public/card3.png';
 
-const TWITTER_HANDLE = 'lsallada';
-const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const CONTRACT_ADDRESS = '0x683C127679e3DceB7d876f8E8729BFB50164ae83';
-const OPENSEA_LINK =
-  'https://testnets.opensea.io/collection/squarenft-ehklsoebyt';
 
 const Home: NextPage = () => {
-  const [isMinting, setIsMinting] = useState<boolean>(false);
-  const [metadata, setMetadata] = useState();
-  const [balance, setBalance] = useState<string>('');
-  const [mintedTokenIds, setMintedTokenIds] = useState([1, 2, 3]);
+  const { connection, connected, readOnlyProvider, connectWallet } =
+    useWallet();
 
-  const { connection, connected, readOnlyProvider } = useWallet();
-
-  const [mintContract, isReady] = useWriteContract(
+  const [contract, isContractReady] = useWriteContract(
     CONTRACT_ADDRESS,
     myEpicNft.abi
   );
 
-  const nftData: NFTData = {
-    tokenId: '1',
-    imageUrl: metadata,
-    name: 'Test name',
-    assetContractName: 'Test asset contract name',
-    assetContractSymbol: 'TEST',
-  };
-
-  const getBalance = useCallback(async () => {
+  const handleMint = async () => {
     try {
-      const { ethereum } = window;
-
-      if (!ethereum) {
-        alert('Get MetaMask!');
-        return;
-      }
-
-      if (connection.userAddress) {
-        const balance = await ethereum
-          .request({
-            method: 'eth_getBalance',
-            params: [connection.userAddress, 'latest'],
-          })
-          .then((userBalance: BigNumberish) =>
-            ethers.utils.formatEther(userBalance).substring(0, 5)
-          );
-        setBalance(balance);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }, [connection.userAddress]);
-
-  const setupEventListener = async () => {
-    if (connected && isReady) {
-      mintContract?.on('NewEpicNFTMinted', async (from, tokenId: BigNumber) => {
-        if (from === connection.userAddress) {
-          console.log(from, tokenId.toNumber());
-          fetchMetaData(tokenId.toNumber());
-        }
-      });
-    }
-  };
-
-  const mint = async () => {
-    try {
-      setupEventListener();
-      const response: TransactionResponse = await mintContract?.makeAnEpicNFT();
-      setIsMinting(true);
+      const response: TransactionResponse = await contract?.makeAnEpicNFT();
       await response.wait();
 
       console.log(
         `Mined, see transaction: https://rinkeby.etherscan.io/tx/${response.hash}`
       );
-      setIsMinting(false);
     } catch (err) {
       console.log(err);
     }
   };
 
-  const fetchMetaData = async (tokenURI: number) => {
-    if (isReady) {
-      try {
-        const response = await mintContract?.tokenURI(tokenURI);
-        const [, base64Metadata] = response.split(',');
-        const obj = JSON.parse(decodeBase64(base64Metadata));
-        setMetadata(obj.image);
-
-        console.log(obj.image);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-  };
-
-  const decodeBase64 = (input: string) => {
-    return base64.decode(input);
-  };
-
-  // Render functions
-
-  const renderLoadingUI = () => (
-    <Flex justifyContent="center">
-      <Spinner
-        w="128px"
-        h="128px"
-        speed="0.75s"
-        color="green.400"
-        emptyColor="gray.700"
-      />
-    </Flex>
-  );
-
-  const renderBalanceUI = () => (
-    <Flex
-      alignItems="center"
-      bg="rgb(25, 27, 31)"
-      borderRadius="1rem"
-      height="40px"
-    >
-      <Box pl="0.75rem" pr="0.5rem">
-        {balance ?? '0.00'} ETH
-      </Box>
-      <Button
-        bg="rgb(33, 35, 41)"
-        border="1px solid rgb(33, 36, 41)"
-        color="rgb(255, 255,  255)"
-        _hover={{ bg: 'rgb(39, 41, 47)' }}
-      >
-        <Address value={`${connection.userAddress}`} shortened />
-      </Button>
-    </Flex>
-  );
-
-  useEffect(() => {
-    getBalance();
-  }, [getBalance]);
-
   return (
-    <div className={styles.App}>
-      <div className={styles.container}>
-        <Flex color="white" justifyContent="space-between" p="1rem" w="100%">
-          <Heading>My NFT Collection</Heading>
-          {connected ? (
-            renderBalanceUI()
-          ) : (
-            <ButtonGroup colorScheme="green">
-              <ConnectWallet />
-            </ButtonGroup>
-          )}
-        </Flex>
-        <div className={styles['header-container']}>
-          <p className={`${styles.header} ${styles['gradient-text']}`}>
-            My NFT Collection
-          </p>
-          <p className="sub-text">
-            Each unique. Each beautiful. Discover your NFT today.
-          </p>
-          {connected ? (
-            <Button onClick={mint} colorScheme="green">
-              Mint
-            </Button>
-          ) : null}
-        </div>
-        {/* <Image
-            src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaW5ZTWluIG1lZXQnIHZpZXdCb3g9JzAgMCAzNTAgMzUwJz48c3R5bGU+LmJhc2UgeyBmaWxsOiB3aGl0ZTsgZm9udC1mYW1pbHk6IHNlcmlmOyBmb250LXNpemU6IDI0cHg7IH08L3N0eWxlPjxyZWN0IHdpZHRoPScxMDAlJyBoZWlnaHQ9JzEwMCUnIGZpbGw9JyM4MEZGREInLz48dGV4dCB4PSc1MCUnIHk9JzUwJScgY2xhc3M9J2Jhc2UnIGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPlRpbWlkIFNjYWxhIE1vYmlsZS1EZXZlbG9wZXI8L3RleHQ+PC9zdmc+"
-            width="313px"
-            height="313px"
-            alt="NFT"
-          /> */}
-        {isMinting ? renderLoadingUI() : null}
-        {metadata && !isMinting ? <NFTCard data={nftData} size="sm" /> : null}
-        <div className={styles['footer-container']}>
-          <Flex alignItems="center">
-            <Image
-              alt="Twitter Logo"
-              className={styles['twitter-logo']}
-              src={twitterLogo}
-              width="32px"
-              height="32px"
+    <div className="min-h-screen bg-gradient-to-r from-purple-100 to-sky-50 text-black selection:bg-indigo-500 selection:text-white">
+      <Header />
+
+      <main className="w-full pt-24">
+        <section className="container relative mx-auto grid grid-cols-1 gap-x-4 gap-y-20 py-16 lg:grid-cols-2">
+          <div className="flex flex-col items-center justify-center text-center lg:items-start lg:text-left">
+            <h1 className="mb-4 text-6xl font-bold xl:text-7xl">
+              Natured Developers
+            </h1>
+            <h2 className="mb-12 text-4xl font-bold text-purple-500 xl:text-5xl">
+              On-chain NFT Project
+            </h2>
+            <p className="text-md mb-10 font-medium text-gray-600 xl:text-lg">
+              A collection of Natured Developer cards with different attributes
+              and styles!
+            </p>
+            <div className="flex flex-col items-center space-x-4 space-y-4 sm:flex-row sm:space-y-0">
+              <button
+                onClick={handleMint}
+                className="flex w-fit text-white space-x-2 rounded-2xl bg-gradient-to-r from-purple-500 via-violet-400 to-indigo-400 px-4 py-3 font-semibold shadow-lg transition-all duration-300 hover:-translate-y-[1px]"
+              >
+                Mint
+              </button>
+            </div>
+          </div>
+          <div className="ml-10 flex justify-center">
+            <div className="relative -skew-y-3 mt-24 skew-x-6">
+              <div className="h-[15rem] w-[11rem] rounded-2xl bg-gray-50 shadow-xl xl:h-[23rem] xl:w-[18rem]">
+                <div className="relative h-[11rem] w-full xl:h-[18rem]">
+                  <span
+                    style={{
+                      boxSizing: 'border-box',
+                      display: 'block',
+                      overflow: 'hidden',
+                      width: 'initial',
+                      height: 'initial',
+                      background: 'none',
+                      opacity: 1,
+                      border: 0,
+                      margin: 0,
+                      padding: 0,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      bottom: 0,
+                      right: 0,
+                    }}
+                  >
+                    <Image src={cardTwo.src} layout="fill" alt="Back Card" />
+                  </span>
+                </div>
+                <div className="flex h-[4rem] w-full items-center justify-between px-4 xl:h-[5rem]">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative h-6 w-6 xl:h-8 xl:w-8">
+                      <span
+                        style={{
+                          boxSizing: 'border-box',
+                          display: 'block',
+                          overflow: 'hidden',
+                          width: 'initial',
+                          height: 'initial',
+                          background: 'none',
+                          opacity: 1,
+                          border: 0,
+                          margin: 0,
+                          padding: 0,
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          bottom: 0,
+                          right: 0,
+                        }}
+                      >
+                        {/* <img
+                          alt="My Profile 1"
+                          src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                          decoding="async"
+                          data-nimg="fill"
+                          className="heroUser"
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            right: 0,
+                            boxSizing: 'border-box',
+                            padding: 0,
+                            border: 'none',
+                            margin: 'auto',
+                            display: 'block',
+                            width: 0,
+                            height: 0,
+                            minWidth: '100%',
+                            maxWidth: '100%',
+                            minHeight: '100%',
+                            maxHeight: '100%',
+                            objectFit: 'cover',
+                          }}
+                        /> */}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-300 xl:text-sm">#4204</p>
+                      <p className="text-md font-medium text-purple-500 xl:text-xl">
+                        1.48 ETH
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="relative skew-y-3 -translate-x-20 -skew-x-6">
+              <div className="h-[15rem] w-[11rem] rounded-2xl bg-gray-50 shadow-xl xl:h-[23rem] xl:w-[18rem]">
+                <div className="relative h-[11rem] w-full xl:h-[18rem]">
+                  <span
+                    style={{
+                      boxSizing: 'border-box',
+                      display: 'block',
+                      overflow: 'hidden',
+                      width: 'initial',
+                      height: 'initial',
+                      background: 'none',
+                      opacity: 1,
+                      border: 0,
+                      margin: 0,
+                      padding: 0,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      bottom: 0,
+                      right: 0,
+                    }}
+                  >
+                    <Image alt="Back Card" src={cardThree.src} layout="fill" />
+                  </span>
+                </div>
+                <div className="flex h-[4rem] w-full items-center justify-between px-4 xl:h-[5rem]">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative h-6 w-6 xl:h-8 xl:w-8">
+                      <span
+                        style={{
+                          boxSizing: 'border-box',
+                          display: 'block',
+                          overflow: 'hidden',
+                          width: 'initial',
+                          height: 'initial',
+                          background: 'none',
+                          opacity: 1,
+                          border: 0,
+                          margin: 0,
+                          padding: 0,
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          bottom: 0,
+                          right: 0,
+                        }}
+                      >
+                        {/* <img
+                          alt="My Profile 2"
+                          src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                          decoding="async"
+                          data-nimg="fill"
+                          className="heroUser"
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            right: 0,
+                            boxSizing: 'border-box',
+                            padding: 0,
+                            border: 'none',
+                            margin: 'auto',
+                            display: 'block',
+                            width: 0,
+                            height: 0,
+                            minWidth: '100%',
+                            maxWidth: '100%',
+                            minHeight: '100%',
+                            maxHeight: '100%',
+                            objectFit: 'cover',
+                          }}
+                        /> */}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-300 xl:text-sm">#8258</p>
+                      <p className="text-md font-medium text-purple-500 xl:text-xl">
+                        2.67 ETH
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="gallery container relative mx-auto py-10"
+          id="gallery"
+        >
+          <h3 className="mb-4 text-center text-3xl font-semibold underline decoration-indigo-500/80 lg:text-left xl:text-4xl">
+            Gallery
+          </h3>
+          <div className="react-multi-carousel-list gallery-slider ">
+            <ul
+              className="react-multi-carousel-track "
+              style={{
+                transition: 'none',
+                overflow: 'unset',
+                transform: 'translate3d(0px,0,0)',
+              }}
             />
-            <a
-              className={styles['footer-text']}
-              href={TWITTER_LINK}
-              target="_blank"
-              rel="noreferrer"
-            >{`built by @${TWITTER_HANDLE}`}</a>
-          </Flex>
-          <Link
-            href={OPENSEA_LINK}
-            color="white"
-            fontSize="16px"
-            fontWeight="700"
-          >
-            🌊 View Collection on OpenSea
-          </Link>
-        </div>
-      </div>
+          </div>
+        </section>
+
+        <Faq />
+      </main>
+
+      <Footer />
     </div>
   );
 };
