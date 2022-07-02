@@ -1,4 +1,4 @@
-/* This example requires Tailwind CSS v2.0+ */
+// MOOSE deprecated
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/solid';
 import { useWallet } from '@web3-ui/core';

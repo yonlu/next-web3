@@ -1,50 +1,6 @@
-import { Address } from '@web3-ui/components';
-import { useWallet } from '@web3-ui/core';
-import { ethers } from 'ethers';
-import { useCallback, useEffect, useState } from 'react';
-import { NetworkDropdown } from '../NetworkDropdown';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const Header = () => {
-  const [balance, setBalance] = useState<string>('');
-  const { connection, connected, connectWallet } = useWallet();
-
-  const getWalletBalance = useCallback(async () => {
-    if (connected) {
-      const userBalance = await connection.signer?.getBalance();
-      if (userBalance) {
-        const parsedBalance = ethers.utils
-          .formatEther(userBalance)
-          .substring(0, 5);
-        setBalance(parsedBalance);
-      }
-    }
-  }, [connected, connection.signer]);
-
-  const renderBalanceUI = () => (
-    <div className="flex gap-1 rounded-2xl bg-gradient-to-r from-purple-500 via-violet-400 to-indigo-400 bg-size-200 bg-pos-0 px-4 py-2 font-semibold shadow-lg shadow-white/10 transition-all duration-300 hover:bg-pos-100">
-      <div>{balance ?? '0.00'} ETH |</div>
-      <div>
-        <Address value={`${connection.userAddress}`} shortened />
-      </div>
-    </div>
-  );
-
-  const renderNetworkDropdown = () => {
-    if (
-      connection.network === 'mainnet' ||
-      connection.network === 'rinkeby' ||
-      connection.network === 'ropsten' ||
-      connection.network === 'kovan' ||
-      connection.network === 'goerli'
-    ) {
-      return <NetworkDropdown network={connection.network} />;
-    }
-  };
-
-  useEffect(() => {
-    getWalletBalance();
-  }, [getWalletBalance, connection.network]);
-
   return (
     <header className="flex w-full flex-col text-white p-6 ">
       <div className="flex items-center justify-between">
@@ -69,33 +25,7 @@ const Header = () => {
                   bottom: 0,
                   right: 0,
                 }}
-              >
-                {/* <img
-                  alt="nft project logo"
-                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                  decoding="async"
-                  data-nimg="fill"
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    bottom: 0,
-                    right: 0,
-                    boxSizing: 'border-box',
-                    padding: 0,
-                    border: 'none',
-                    margin: 'auto',
-                    display: 'block',
-                    width: 0,
-                    height: 0,
-                    minWidth: '100%',
-                    maxWidth: '100%',
-                    minHeight: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
-                  }}
-                /> */}
-              </span>
+              ></span>
             </div>
           </a>
           <div className="ml-10 hidden xl:flex">
@@ -134,19 +64,7 @@ const Header = () => {
           </div>
         </div>
         <div className="hidden items-center space-x-4 md:inline-flex">
-          <>
-            {connected && renderNetworkDropdown()}
-            {connected ? (
-              renderBalanceUI()
-            ) : (
-              <button
-                onClick={connectWallet}
-                className="rounded-2xl bg-gradient-to-r from-purple-500 via-violet-400 to-indigo-400 bg-size-200 bg-pos-0 px-4 py-2 font-semibold shadow-lg shadow-white/10 transition-all duration-300 hover:bg-pos-100"
-              >
-                Connect Wallet
-              </button>
-            )}
-          </>
+          <ConnectButton />
         </div>
         <div className="inline-flex md:hidden">
           <div className="cursor-pointer rounded-full bg-indigo-500 p-2 shadow-lg shadow-white/10 transition-colors hover:bg-indigo-600">
