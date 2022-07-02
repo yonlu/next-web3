@@ -1,3 +1,4 @@
+// MOOSE remove this page
 import {
   Box,
   Button,
@@ -7,18 +8,18 @@ import {
   Link,
   Spinner,
 } from '@chakra-ui/react';
-import type { NextPage } from 'next';
-import { useCallback, useEffect, useState } from 'react';
-import { ConnectWallet, useWallet, useWriteContract } from '@web3-ui/core';
-import { BigNumber, BigNumberish, ethers } from 'ethers';
-import base64 from 'base-64';
-import Image from 'next/image';
-import { Address, NFTCard, NFTData } from '@web3-ui/components';
-
-import styles from '../styles/Home.module.css';
-import twitterLogo from '../assets/twitter-logo.svg';
-import myEpicNft from '../utils/myEpicNft.json';
 import { TransactionResponse } from '@ethersproject/providers';
+import { Address, NFTCard, NFTData } from '@web3-ui/components';
+import { ConnectWallet, useWallet, useWriteContract } from '@web3-ui/core';
+import base64 from 'base-64';
+import { BigNumber, BigNumberish, ethers } from 'ethers';
+import type { NextPage } from 'next';
+import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
+
+import twitterLogo from '../assets/twitter-logo.svg';
+import styles from '../styles/Home.module.css';
+import myEpicNft from '../utils/myEpicNft.json';
 
 const TWITTER_HANDLE = 'lsallada';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
@@ -191,6 +192,7 @@ const Home: NextPage = () => {
           /> */}
         {isMinting ? renderLoadingUI() : null}
         {metadata && !isMinting ? <NFTCard data={nftData} size="sm" /> : null}
+
         <div className={styles['footer-container']}>
           <Flex alignItems="center">
             <Image
