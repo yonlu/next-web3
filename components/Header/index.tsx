@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useWallet } from '@web3-ui/core';
 import { Address } from '@web3-ui/components';
+import { useWallet } from '@web3-ui/core';
 import { ethers } from 'ethers';
+import { useCallback, useEffect, useState } from 'react';
 import { NetworkDropdown } from '../NetworkDropdown';
 
 const Header = () => {
@@ -28,6 +28,18 @@ const Header = () => {
       </div>
     </div>
   );
+
+  const renderNetworkDropdown = () => {
+    if (
+      connection.network === 'mainnet' ||
+      connection.network === 'rinkeby' ||
+      connection.network === 'ropsten' ||
+      connection.network === 'kovan' ||
+      connection.network === 'goerli'
+    ) {
+      return <NetworkDropdown network={connection.network} />;
+    }
+  };
 
   useEffect(() => {
     getWalletBalance();
@@ -122,24 +134,19 @@ const Header = () => {
           </div>
         </div>
         <div className="hidden items-center space-x-4 md:inline-flex">
-          {connected && (
-            <>
-              <NetworkDropdown network={connection.network} />
-              {/* <div className="rounded-2xl bg-gradient-to-r from-purple-500 via-violet-400 to-indigo-400 bg-size-200 bg-pos-0 px-4 py-2 font-semibold shadow-lg shadow-white/10 transition-all duration-300 hover:bg-pos-100">
-                Network: {connection.network}
-              </div> */}
-            </>
-          )}
-          {connected ? (
-            renderBalanceUI()
-          ) : (
-            <button
-              onClick={connectWallet}
-              className="rounded-2xl bg-gradient-to-r from-purple-500 via-violet-400 to-indigo-400 bg-size-200 bg-pos-0 px-4 py-2 font-semibold shadow-lg shadow-white/10 transition-all duration-300 hover:bg-pos-100"
-            >
-              Connect Wallet
-            </button>
-          )}
+          <>
+            {connected && renderNetworkDropdown()}
+            {connected ? (
+              renderBalanceUI()
+            ) : (
+              <button
+                onClick={connectWallet}
+                className="rounded-2xl bg-gradient-to-r from-purple-500 via-violet-400 to-indigo-400 bg-size-200 bg-pos-0 px-4 py-2 font-semibold shadow-lg shadow-white/10 transition-all duration-300 hover:bg-pos-100"
+              >
+                Connect Wallet
+              </button>
+            )}
+          </>
         </div>
         <div className="inline-flex md:hidden">
           <div className="cursor-pointer rounded-full bg-indigo-500 p-2 shadow-lg shadow-white/10 transition-colors hover:bg-indigo-600">
