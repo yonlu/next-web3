@@ -12,14 +12,14 @@ import { TransactionResponse } from '@ethersproject/providers';
 import { Address, NFTCard, NFTData } from '@web3-ui/components';
 import { ConnectWallet, useWallet, useWriteContract } from '@web3-ui/core';
 import base64 from 'base-64';
-import { BigNumber, BigNumberish, ethers } from 'ethers';
+import { BigNumber } from 'ethers';
 import type { NextPage } from 'next';
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import twitterLogo from '../assets/twitter-logo.svg';
 import styles from '../styles/Home.module.css';
-import myEpicNft from '../utils/myEpicNft.json';
+import myEpicNft from '../abis/myEpicNft.json';
 
 const TWITTER_HANDLE = 'lsallada';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
@@ -48,30 +48,30 @@ const Home: NextPage = () => {
     assetContractSymbol: 'TEST',
   };
 
-  const getBalance = useCallback(async () => {
-    try {
-      const { ethereum } = window;
+  // const getBalance = useCallback(async () => {
+  //   try {
+  //     const { ethereum } = window;
 
-      if (!ethereum) {
-        alert('Get MetaMask!');
-        return;
-      }
+  //     if (!ethereum) {
+  //       alert('Get MetaMask!');
+  //       return;
+  //     }
 
-      if (connection.userAddress) {
-        const balance = await ethereum
-          .request({
-            method: 'eth_getBalance',
-            params: [connection.userAddress, 'latest'],
-          })
-          .then((userBalance: BigNumberish) =>
-            ethers.utils.formatEther(userBalance).substring(0, 5)
-          );
-        setBalance(balance);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }, [connection.userAddress]);
+  //     if (connection.userAddress) {
+  //       const balance = await ethereum
+  //         .request({
+  //           method: 'eth_getBalance',
+  //           params: [connection.userAddress, 'latest'],
+  //         })
+  //         .then((userBalance: BigNumberish) =>
+  //           ethers.utils.formatEther(userBalance).substring(0, 5)
+  //         );
+  //       setBalance(balance);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }, [connection.userAddress]);
 
   const setupEventListener = async () => {
     if (connected && isReady) {
@@ -153,10 +153,6 @@ const Home: NextPage = () => {
       </Button>
     </Flex>
   );
-
-  useEffect(() => {
-    getBalance();
-  }, [getBalance]);
 
   return (
     <div className={styles.App}>

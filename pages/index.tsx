@@ -1,16 +1,16 @@
+import { useEffect, useState } from 'react';
+import { NextPage } from 'next';
+import { useContractRead, useContractWrite, useContractEvent } from 'wagmi';
 import { NFTData } from '@web3-ui/components';
-import base64 from 'base-64';
 import { BigNumber } from 'ethers';
 import { Result } from 'ethers/lib/utils';
-import { NextPage } from 'next';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { useContractRead, useContractWrite, useContractEvent } from 'wagmi';
+import base64 from 'base-64';
 
 import { Faq, Footer, Header, Modal } from '../components';
 import cardTwo from '../public/card2.png';
 import cardThree from '../public/card3.png';
-import myEpicNft from '../utils/myEpicNft.json';
+import myEpicNft from '../abis/myEpicNft.json';
 
 // MOOSE delete me
 const FOO = [
