@@ -9,13 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@chakra-ui/react": "^1.8.8",
-    "@emotion/react": "^11",
-    "@emotion/styled": "^11",
     "@ethersproject/providers": "^5.6.4",
     "@headlessui/react": "^1.6.0",
     "@heroicons/react": "^1.0.6",
     "@rainbow-me/rainbowkit": "^0.4.1",
+    "@tanstack/react-query": "^4.0.10",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
     "@web3-ui/components": "^0.12.0",
@@ -24,11 +22,10 @@
     "base-64": "^1.0.0",
     "cors": "^2.8.5",
     "ethers": "^5.6.9",
-    "framer-motion": "^6",
     "next": "^12.1.5",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "wagmi": "^0.5.5"
+    "wagmi": "^0.6.2"
   },
   "devDependencies": {
     "@types/base-64": "^1.0.0",

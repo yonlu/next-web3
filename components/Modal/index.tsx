@@ -19,7 +19,7 @@ const Modal = ({ nftData }: ModalProps) => {
 
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center">
+      {/* <div className="fixed inset-0 flex items-center justify-center">
         <button
           type="button"
           onClick={openModal}
@@ -27,7 +27,7 @@ const Modal = ({ nftData }: ModalProps) => {
         >
           Open dialog
         </button>
-      </div>
+      </div> */}
 
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
@@ -59,7 +59,7 @@ const Modal = ({ nftData }: ModalProps) => {
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900"
                   >
-                    Mint successful
+                    Mint complete!
                   </Dialog.Title>
                   <div className="flex flex-col items-center gap-2 mt-2">
                     <p className="text-sm text-gray-500">

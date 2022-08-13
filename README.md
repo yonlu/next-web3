@@ -22,8 +22,6 @@
   </p>
 </div>
 
-
-
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
@@ -48,38 +46,34 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+![product-screenshot](docs/homescreen.png)
 
 Frontend for Natured Developers, an On-chain ERC721 Project. Currently under development in Rinkeby Ethereum testnet.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 ### Built With
 
-* [Next.js](https://nextjs.org/)
-* [React.js](https://reactjs.org/)
-* [wagmi](https://github.com/tmm/wagmi)
-* [rainbowkit](https://github.com/rainbow-me/rainbowkit)
+- [Next.js](https://nextjs.org/)
+- [React.js](https://reactjs.org/)
+- [wagmi](https://github.com/tmm/wagmi)
+- [rainbowkit](https://github.com/rainbow-me/rainbowkit)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-* A deployed ERC721 contract
+- A deployed ERC721 contract
 
 ### Installation
 
@@ -100,36 +94,34 @@ To get a local copy up and running follow these simple example steps.
      ALCHEMY_API=<YOUR_ALCHEMY_API>
    ```
 5. Place the contract's abi in `abis/` directory in `JSON`.
-    ```json
-    {
-      "_format": "hh-sol-artifact-1",
-      "contractName": "NaturedDevelopers",
-      "sourceName": "contracts/NaturedDevelopers.sol",
-      "abi": [
-        {
-          "inputs": [],
-          "stateMutability": "nonpayable",
-          "type": "constructor"
-        },
-      "...": "..."
-      ]
-    }
-    ```
+   ```json
+   {
+     "_format": "hh-sol-artifact-1",
+     "contractName": "NaturedDevelopers",
+     "sourceName": "contracts/NaturedDevelopers.sol",
+     "abi": [
+       {
+         "inputs": [],
+         "stateMutability": "nonpayable",
+         "type": "constructor"
+       },
+     "...": "..."
+     ]
+   }
+   ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- USAGE EXAMPLES -->
+
 ## Usage
 
 _For usage examples, please refer to [wagmi's docs](https://wagmi.sh/docs/getting-started)_
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- ROADMAP -->
+
 ## Roadmap
 
 - [x] Token Preview
@@ -141,9 +133,8 @@ See the [open issues](https://github.com/othneildrew/Best-README-Template/issues
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -159,6 +150,7 @@ If you have a suggestion that would make this better, please fork the repo and c
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- CONTACT -->
+
 ## Contact
 
 Lucas Sallada - [@lsallada](https://twitter.com/lsallada) - sallada.lucas@gmail.com
