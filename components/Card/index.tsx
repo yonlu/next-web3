@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 interface CardProps {
   imageUrl?: string;
   name?: string | null;
@@ -10,24 +8,15 @@ const imageSrc =
 
 const Card = ({ imageUrl = imageSrc, name }: CardProps) => {
   return (
-    <div className="text-xs bg-white rounded-lg">
-      <div>
-        <Image
-          className="rounded-t-lg"
-          src={imageUrl}
-          width={300}
-          height={300}
-          alt=""
-        />
-      </div>
-
-      <div className="px-4 py-3">
-        <span>{name}</span>
-        <div className="flex flex-col">
-          <span>Price</span>
-          <span>Icon - 0.51</span>
+    <div className="card w-60 bg-base-100 shadow-xl scale-100 transition-all hover:scale-105">
+      <figure>
+        <img className="object-contain" src={imageUrl} alt="Shoes" />
+      </figure>
+      <div className="card-body h-2/6">
+        <h2 className="card-title">{name}</h2>
+        <div className="card-actions justify-end">
+          <button className="btn-sm btn-primary">Buy Now</button>
         </div>
-        <footer>Last sale: Icon - 1.12</footer>
       </div>
     </div>
   );

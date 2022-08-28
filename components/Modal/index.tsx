@@ -1,79 +1,47 @@
+import { Fragment, SetStateAction } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { NFTCard, NFTData } from '@web3-ui/components';
-import { Fragment, useState } from 'react';
 
 interface ModalProps {
-  nftData: NFTData;
+  open: boolean;
+  setOpen: React.Dispatch<SetStateAction<boolean>>;
+  imageUrl: string | undefined;
 }
 
-const Modal = ({ nftData }: ModalProps) => {
-  const [isOpen, setIsOpen] = useState(true);
-
-  const closeModal = () => {
-    setIsOpen(false);
-  };
-
-  const openModal = () => {
-    setIsOpen(true);
-  };
-
+const Modal = ({ open, setOpen, imageUrl }: ModalProps) => {
   return (
-    <>
-      {/* <div className="fixed inset-0 flex items-center justify-center">
-        <button
-          type="button"
-          onClick={openModal}
-          className="rounded-md bg-black bg-opacity-20 px-4 py-2 text-sm font-medium text-white hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+    <Transition.Root show={open} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={setOpen}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
         >
-          Open dialog
-        </button>
-      </div> */}
+          <div className="fixed inset-0 bg-stone-800 bg-opacity-90 transition-opacity" />
+        </Transition.Child>
 
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
-                  >
-                    Mint complete!
-                  </Dialog.Title>
-                  <div className="flex flex-col items-center gap-2 mt-2">
-                    <p className="text-sm text-gray-500">
-                      Your transaction has been successful.
-                    </p>
-                    <NFTCard data={nftData} size="xs" />
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end sm:items-center justify-center min-h-full p-4 text-center sm:p-0">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <Dialog.Panel className="relative overflow-hidden shadow-xl transform transition-all sm:max-w-sm sm:w-full">
+                <img src={imageUrl} alt="" className="w-full" />
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
-        </Dialog>
-      </Transition>
-    </>
+        </div>
+      </Dialog>
+    </Transition.Root>
   );
 };
 

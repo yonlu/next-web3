@@ -1,13 +1,14 @@
 import { NETWORKS, Provider } from '@web3-ui/core';
 import type { AppProps } from 'next/app';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import '../styles/globals.css';
-
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { chain, configureChains, createClient, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
+
+import '../styles/globals.css';
 import { PreviewProvider } from '../hooks/usePreview';
 
 const { chains, provider } = configureChains(
@@ -16,7 +17,7 @@ const { chains, provider } = configureChains(
 );
 
 const { connectors } = getDefaultWallets({
-  appName: 'My RainbowKit App',
+  appName: 'Natured Developers Mint Dapp',
   chains,
 });
 
@@ -40,6 +41,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           </Provider>
         </RainbowKitProvider>
       </WagmiConfig>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
