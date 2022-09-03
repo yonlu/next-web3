@@ -9,11 +9,28 @@ import {
   PlusSmIcon,
   ViewGridIcon,
 } from '@heroicons/react/solid';
-import { Network, Alchemy } from 'alchemy-sdk';
+import { Network, Alchemy, Nft } from 'alchemy-sdk';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Navbar } from '../components/Navbar';
 import { classNames, debounce } from '../utils/helpers';
+
+const filterOption = z.object({
+  value: z.string(),
+  label: z.string(),
+  checked: z.boolean(),
+});
+
+const schema = z.array({
+  id: z.string(),
+  name: z.string(),
+  options: z.array(filterOption),
+});
+
+type FormSchemaType = z.infer<typeof schema>;
 
 const sortOptions = [
   { name: 'Newest', href: '#', current: false },
@@ -59,17 +76,25 @@ async function fetchCollection({ pageParam = '0' }) {
 }
 
 async function fetchFoo(
+  pageParam: string,
   contractAddress?: string,
   startToken?: string,
   filterOptions?: any
 ) {
+  console.log(pageParam);
+  console.log(contractAddress);
+  console.log(startToken);
+  console.log(filterOptions);
+
   let bar = '';
   for (const [key, value] of Object.entries(filterOptions)) {
     bar += `${key}=${value}&`;
   }
 
   const data = await fetch(
-    `/api/hello?contractAddress=${contractAddress}&` +
+    `/api/collection?` +
+      `pageParam=${pageParam}&` +
+      `contractAddress=${contractAddress}&` +
       `startToken=${startToken}&` +
       `limit=${12}&` +
       `${bar}`
@@ -79,27 +104,48 @@ async function fetchFoo(
 
 export default function Gallery() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [filterOptions, setFilterOptions] = useState({});
 
-  const { data, isLoading } = useQuery(['foo'], () =>
-    fetchFoo(miladyContract.addressOrName, '0', {
-      Race: 'clay',
-      Background: 'sunset',
-      Eyes: 'sparkle',
-      'Eye Color': 'blue',
-    })
+  const { register, watch, getValues } = useForm();
+
+  // const { data, isLoading } = useQuery(['foo', filterOptions], () =>
+  //   fetchFoo(miladyContract.addressOrName, '0', {
+  //     Background: filterOptions.value,
+  //   })
+  // );
+
+  const {
+    data,
+    isLoading,
+    fetchNextPage: fetchNextFoo,
+  } = useInfiniteQuery(
+    ['foo'],
+    ({ pageParam = '0' }) =>
+      fetchFoo(pageParam, miladyContract.addressOrName, '0', {
+        Background: 'sunset',
+      }),
+    {
+      getNextPageParam: (lastPage, pages) => lastPage.nextToken,
+      refetchOnWindowFocus: false,
+    }
   );
 
   const {
     data: collection,
     isLoading: isLoadingCollection,
     fetchNextPage,
-  } = useInfiniteQuery(
-    ['nftCollection', miladyContract.addressOrName],
-    fetchCollection,
-    {
-      getNextPageParam: (lastPage, pages) => lastPage.pageKey,
-    }
-  );
+  } = useInfiniteQuery(['nftCollection', filterOptions], fetchCollection, {
+    getNextPageParam: (lastPage, pages) => lastPage.pageKey,
+    refetchOnWindowFocus: false,
+  });
+
+  const handleFormChange = () => {
+    const [value] = getValues('Background');
+    const newFilter = {
+      value,
+    };
+    setFilterOptions(newFilter);
+  };
 
   useEffect(() => {
     const DEBOUNCE_TIMER = 250;
@@ -108,18 +154,14 @@ export default function Gallery() {
       debounce(function () {
         if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
           fetchNextPage();
+          fetchNextFoo();
         }
       }, DEBOUNCE_TIMER)
     );
-  }, [fetchNextPage]);
-
-  function handleFormChanged(event: FormEvent) {
-    console.log(event);
-    event.preventDefault();
-  }
+  }, [fetchNextPage, fetchNextFoo]);
 
   if (isLoading) return <span>Loading...</span>;
-  if (isLoadingCollection) return <span>Loading...</span>;
+  if (isLoadingCollection) return <span>Loading Collection...</span>;
 
   return (
     <>
@@ -309,7 +351,7 @@ export default function Gallery() {
 
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-10">
                 {/* Filters */}
-                <form onChange={handleFormChanged} className="hidden lg:block">
+                <form onChange={handleFormChange} className="hidden lg:block">
                   {filters.map((section) => (
                     <Disclosure
                       as="div"
@@ -347,11 +389,11 @@ export default function Gallery() {
                                 >
                                   <input
                                     id={`filter-${section.id}-${optionIdx}`}
-                                    name={`${section.id}[]`}
                                     defaultValue={option.value}
                                     type="checkbox"
                                     defaultChecked={option.checked}
                                     className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
+                                    {...register(`Background`)}
                                   />
                                   <label
                                     htmlFor={`filter-${section.id}-${optionIdx}`}
@@ -367,6 +409,7 @@ export default function Gallery() {
                       )}
                     </Disclosure>
                   ))}
+                  <pre>{JSON.stringify(watch(), null, 2)}</pre>
                 </form>
 
                 {/* Product grid */}
@@ -374,9 +417,9 @@ export default function Gallery() {
                   {/* Replace with your content */}
                   <div className="border-4 border-dashed border-gray-200 rounded-lg h-full">
                     <div className="flex flex-wrap justify-around gap-3">
-                      {collection?.pages &&
-                        collection?.pages.map((page) => {
-                          return page.nfts?.map((token) => (
+                      {data?.pages &&
+                        data?.pages.map((page) => {
+                          return page.nfts?.map((token: Nft) => (
                             <Link
                               href={`tokens/${token?.tokenId}`}
                               key={`${token?.contract?.address} - ${token?.tokenId}`}

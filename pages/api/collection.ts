@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
-import { Network, Alchemy, NftContractNftsResponse, Nft } from 'alchemy-sdk';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { Network, Alchemy, Nft } from 'alchemy-sdk';
 
 const settings = {
   apiKey: process.env.ALCHEMY_API,
@@ -31,7 +31,7 @@ async function fetchCollection(fetchCollectionOptions: any) {
   return alchemy.nft.getNftsForContract(
     fetchCollectionOptions.contractAddress,
     {
-      pageKey: '0',
+      pageKey: fetchCollectionOptions.pageParam,
       omitMetadata: false,
       pageSize: fetchCollectionOptions.limit,
     }
@@ -42,16 +42,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { contractAddress, startToken, limit, ...filterOptions } = req.query;
+  const { pageParam, contractAddress, startToken, limit, ...filterOptions } =
+    req.query;
+  console.log(pageParam);
+  console.log(contractAddress);
+  console.log(startToken);
+  console.log(limit);
+
   const fetchOptions = {
+    pageParam,
     contractAddress,
     startToken,
     limit: Number(limit),
   };
 
-  const data = await fetchCollection(fetchOptions).then((r) =>
-    filter(r.nfts, filterOptions)
-  );
+  const data = await fetchCollection(fetchOptions).then((r) => {
+    const filteredCollection = filter(r.nfts, filterOptions);
+    return { nextToken: r.pageKey, nfts: filteredCollection };
+  });
 
   return res.status(200).json(data);
 }
