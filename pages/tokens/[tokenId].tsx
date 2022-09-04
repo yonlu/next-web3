@@ -3,9 +3,15 @@ import { useRouter } from 'next/router';
 import { Network, Alchemy } from 'alchemy-sdk';
 import { BigNumber, BigNumberish } from 'ethers';
 import { useQuery } from '@tanstack/react-query';
+import { Disclosure } from '@headlessui/react';
+import {
+  Bars3Icon,
+  ListBulletIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from '@heroicons/react/20/solid';
 
-import { Navbar } from '../../components/Navbar';
-import { Modal } from '../../components';
+import { Navbar, Modal } from '../../components';
 import miladyMakerIcon from '../../public/milady-maker.jpeg';
 
 const settings = {
@@ -121,7 +127,7 @@ const Token = () => {
         <main className="mt-8 max-w-2xl mx-auto pb-16 px-4 sm:pb-24 sm:px-6 lg:max-w-7xl lg:px-8">
           <div className="lg:grid lg:grid-cols-12 lg:auto-rows-min lg:gap-x-8">
             {/* Image */}
-            <div className="mt-8 lg:mt-0 lg:col-start-2 lg:col-span-3 lg:row-start-1 lg:row-span-3">
+            <div className="mt-8 lg:mt-0 lg:col-start-1 lg:col-span-5 lg:row-start-1 lg:row-span-3">
               <h2 className="sr-only">Image</h2>
 
               <div
@@ -137,9 +143,83 @@ const Token = () => {
                   )}
                 />
               </div>
+
+              {/* Accordion */}
+              <section className="mt-5 border border-solid border-gray-200 rounded-lg">
+                {/* Description */}
+                <Disclosure defaultOpen={true}>
+                  <Disclosure.Button
+                    className={classNames(
+                      'flex',
+                      'p-5',
+                      'border-b',
+                      'w-full',
+                      'font-semibold'
+                    )}
+                  >
+                    <Bars3Icon
+                      className="block h-6 w-6 mr-2"
+                      aria-hidden="true"
+                    />
+                    <span>Description</span>
+                  </Disclosure.Button>
+                  <Disclosure.Panel className="p-7 text-stone-800 bg-sky-50">
+                    {data?.description}
+                  </Disclosure.Panel>
+                </Disclosure>
+
+                {/* Properties */}
+                <Disclosure>
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button
+                        className={classNames(
+                          'flex',
+                          'p-5',
+                          'border-y',
+                          'w-full',
+                          'font-semibold'
+                        )}
+                      >
+                        <ListBulletIcon
+                          className="block h-6 w-6 mr-2"
+                          aria-hidden="true"
+                        />
+
+                        <span>Properties</span>
+                        {open ? (
+                          <ChevronUpIcon
+                            className="block h-6 w-6 ml-auto"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <ChevronDownIcon
+                            className="block h-6 w-6 ml-auto"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </Disclosure.Button>
+                      <Disclosure.Panel className="flex flex-wrap p-1 text-stone-800 bg-sky-50">
+                        {data?.rawMetadata?.attributes?.map((attribute) => (
+                          <a key={attribute['trait_type']} href="">
+                            <div className="w-36 h-24 m-1 p-2 border rounded-md border-blue-500 text-center">
+                              <div className="uppercase text-xs text-blue-500">
+                                {attribute['trait_type']}
+                              </div>
+                              <div className="text-base capitalize">
+                                {attribute.value}
+                              </div>
+                            </div>
+                          </a>
+                        ))}
+                      </Disclosure.Panel>
+                    </>
+                  )}
+                </Disclosure>
+              </section>
             </div>
 
-            <div className="lg:col-start-8 lg:col-span-5">
+            <div className="lg:col-start-7 lg:col-span-6">
               {/* Collection & Token Name */}
               <div className="flex flex-col mb-8">
                 <div className="flex mb-2 gap-2">

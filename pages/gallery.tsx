@@ -1,36 +1,20 @@
 import { Fragment, useState, useEffect, FormEvent } from 'react';
 import Link from 'next/link';
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react';
-import { XIcon } from '@heroicons/react/outline';
 import {
   ChevronDownIcon,
-  FilterIcon,
-  MinusSmIcon,
-  PlusSmIcon,
-  ViewGridIcon,
-} from '@heroicons/react/solid';
+  FunnelIcon,
+  MinusIcon,
+  PlusIcon,
+  ViewColumnsIcon,
+  XMarkIcon,
+} from '@heroicons/react/20/solid';
 import { Network, Alchemy, Nft } from 'alchemy-sdk';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { z } from 'zod';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Navbar } from '../components/Navbar';
 import { classNames, debounce } from '../utils/helpers';
-
-const filterOption = z.object({
-  value: z.string(),
-  label: z.string(),
-  checked: z.boolean(),
-});
-
-const schema = z.array({
-  id: z.string(),
-  name: z.string(),
-  options: z.array(filterOption),
-});
-
-type FormSchemaType = z.infer<typeof schema>;
 
 const sortOptions = [
   { name: 'Newest', href: '#', current: false },
@@ -81,11 +65,6 @@ async function fetchFoo(
   startToken?: string,
   filterOptions?: any
 ) {
-  console.log(pageParam);
-  console.log(contractAddress);
-  console.log(startToken);
-  console.log(filterOptions);
-
   let bar = '';
   for (const [key, value] of Object.entries(filterOptions)) {
     bar += `${key}=${value}&`;
@@ -108,33 +87,28 @@ export default function Gallery() {
 
   const { register, watch, getValues } = useForm();
 
-  // const { data, isLoading } = useQuery(['foo', filterOptions], () =>
-  //   fetchFoo(miladyContract.addressOrName, '0', {
-  //     Background: filterOptions.value,
-  //   })
+  // const {
+  //   data,
+  //   isLoading,
+  //   fetchNextPage: fetchNextFoo,
+  // } = useInfiniteQuery(
+  //   ['foo'],
+  //   ({ pageParam = '0' }) =>
+  //     fetchFoo(pageParam, miladyContract.addressOrName, '0', {
+  //       Background: 'sunset',
+  //     }),
+  //   {
+  //     getNextPageParam: (lastPage, pages) => lastPage.nextToken,
+  //     refetchOnWindowFocus: false,
+  //     enabled: false,
+  //   }
   // );
-
-  const {
-    data,
-    isLoading,
-    fetchNextPage: fetchNextFoo,
-  } = useInfiniteQuery(
-    ['foo'],
-    ({ pageParam = '0' }) =>
-      fetchFoo(pageParam, miladyContract.addressOrName, '0', {
-        Background: 'sunset',
-      }),
-    {
-      getNextPageParam: (lastPage, pages) => lastPage.nextToken,
-      refetchOnWindowFocus: false,
-    }
-  );
 
   const {
     data: collection,
     isLoading: isLoadingCollection,
     fetchNextPage,
-  } = useInfiniteQuery(['nftCollection', filterOptions], fetchCollection, {
+  } = useInfiniteQuery(['nftCollection'], fetchCollection, {
     getNextPageParam: (lastPage, pages) => lastPage.pageKey,
     refetchOnWindowFocus: false,
   });
@@ -154,19 +128,18 @@ export default function Gallery() {
       debounce(function () {
         if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
           fetchNextPage();
-          fetchNextFoo();
         }
       }, DEBOUNCE_TIMER)
     );
-  }, [fetchNextPage, fetchNextFoo]);
+  }, [fetchNextPage]);
 
-  if (isLoading) return <span>Loading...</span>;
+  // if (isLoading) return <span>Loading...</span>;
   if (isLoadingCollection) return <span>Loading Collection...</span>;
 
   return (
     <>
       <Navbar />
-      <div className="bg-white">
+      <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div>
           {/* Mobile filter dialog */}
           <Transition.Root show={mobileFiltersOpen} as={Fragment}>
@@ -208,7 +181,7 @@ export default function Gallery() {
                         onClick={() => setMobileFiltersOpen(false)}
                       >
                         <span className="sr-only">Close menu</span>
-                        <XIcon className="h-6 w-6" aria-hidden="true" />
+                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
                     </div>
 
@@ -229,12 +202,12 @@ export default function Gallery() {
                                   </span>
                                   <span className="ml-6 flex items-center">
                                     {open ? (
-                                      <MinusSmIcon
+                                      <MinusIcon
                                         className="h-5 w-5"
                                         aria-hidden="true"
                                       />
                                     ) : (
-                                      <PlusSmIcon
+                                      <PlusIcon
                                         className="h-5 w-5"
                                         aria-hidden="true"
                                       />
@@ -331,7 +304,7 @@ export default function Gallery() {
                   className="p-2 -m-2 ml-5 sm:ml-7 text-gray-400 hover:text-gray-500"
                 >
                   <span className="sr-only">View grid</span>
-                  <ViewGridIcon className="w-5 h-5" aria-hidden="true" />
+                  <ViewColumnsIcon className="w-5 h-5" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
@@ -339,7 +312,7 @@ export default function Gallery() {
                   onClick={() => setMobileFiltersOpen(true)}
                 >
                   <span className="sr-only">Filters</span>
-                  <FilterIcon className="w-5 h-5" aria-hidden="true" />
+                  <FunnelIcon className="w-5 h-5" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -367,12 +340,12 @@ export default function Gallery() {
                               </span>
                               <span className="ml-6 flex items-center">
                                 {open ? (
-                                  <MinusSmIcon
+                                  <MinusIcon
                                     className="h-5 w-5"
                                     aria-hidden="true"
                                   />
                                 ) : (
-                                  <PlusSmIcon
+                                  <PlusIcon
                                     className="h-5 w-5"
                                     aria-hidden="true"
                                   />
@@ -409,7 +382,6 @@ export default function Gallery() {
                       )}
                     </Disclosure>
                   ))}
-                  <pre>{JSON.stringify(watch(), null, 2)}</pre>
                 </form>
 
                 {/* Product grid */}
@@ -417,8 +389,8 @@ export default function Gallery() {
                   {/* Replace with your content */}
                   <div className="border-4 border-dashed border-gray-200 rounded-lg h-full">
                     <div className="flex flex-wrap justify-around gap-3">
-                      {data?.pages &&
-                        data?.pages.map((page) => {
+                      {collection?.pages &&
+                        collection?.pages.map((page) => {
                           return page.nfts?.map((token: Nft) => (
                             <Link
                               href={`tokens/${token?.tokenId}`}
