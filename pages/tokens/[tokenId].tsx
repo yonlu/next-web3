@@ -9,6 +9,7 @@ import {
   ListBulletIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  IdentificationIcon,
 } from '@heroicons/react/20/solid';
 
 import { Navbar, Modal } from '../../components';
@@ -48,56 +49,6 @@ const Token = () => {
   const { tokenId } = router.query;
 
   const [open, setOpen] = useState(false);
-  let [categories] = useState({
-    Recent: [
-      {
-        id: 1,
-        title: 'Does drinking coffee make you smarter?',
-        date: '5h ago',
-        commentCount: 5,
-        shareCount: 2,
-      },
-      {
-        id: 2,
-        title: "So you've bought coffee... now what?",
-        date: '2h ago',
-        commentCount: 3,
-        shareCount: 2,
-      },
-    ],
-    Popular: [
-      {
-        id: 1,
-        title: 'Is tech making coffee better or worse?',
-        date: 'Jan 7',
-        commentCount: 29,
-        shareCount: 16,
-      },
-      {
-        id: 2,
-        title: 'The most innovative things happening in coffee',
-        date: 'Mar 19',
-        commentCount: 24,
-        shareCount: 12,
-      },
-    ],
-    Trending: [
-      {
-        id: 1,
-        title: 'Ask Me Anything: 10 answers to your questions about coffee',
-        date: '2d ago',
-        commentCount: 9,
-        shareCount: 5,
-      },
-      {
-        id: 2,
-        title: "The worst advice we've ever heard about coffee",
-        date: '4d ago',
-        commentCount: 1,
-        shareCount: 2,
-      },
-    ],
-  });
 
   const { data, isLoading } = useQuery(['selectedToken', tokenId], () =>
     fetchNft(miladyContract.addressOrName, BigNumber.from(tokenId))
@@ -107,6 +58,12 @@ const Token = () => {
     ['ownerAddress', tokenId],
     () => fetchOwners(miladyContract.addressOrName, BigNumber.from(tokenId))
   );
+
+  const formatAddress = (address: string) => {
+    const partOne = address.substring(0, 8);
+    const partTwo = address.substring(38, 42);
+    return `${partOne}...${partTwo}`;
+  };
 
   const formattedOwnerAddress = useMemo(() => {
     const partOne = owner?.substring(0, 8);
@@ -212,6 +169,72 @@ const Token = () => {
                             </div>
                           </a>
                         ))}
+                      </Disclosure.Panel>
+                    </>
+                  )}
+                </Disclosure>
+
+                {/* Details */}
+                <Disclosure>
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button
+                        className={classNames(
+                          'flex',
+                          'p-5',
+                          'border-y',
+                          'w-full',
+                          'font-semibold'
+                        )}
+                      >
+                        <IdentificationIcon
+                          className="block h-6 w-6 mr-2"
+                          aria-hidden="true"
+                        />
+
+                        <span>Details</span>
+                        {open ? (
+                          <ChevronUpIcon
+                            className="block h-6 w-6 ml-auto"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <ChevronDownIcon
+                            className="block h-6 w-6 ml-auto"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </Disclosure.Button>
+                      <Disclosure.Panel className="flex flex-wrap p-5 text-stone-800 bg-sky-50">
+                        <div className="w-full">
+                          <div className="flex justify-between mt-2">
+                            Contract Address
+                            <a
+                              href={`https://etherscan.io/address/${data?.contract?.address}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sm text-blue-600 font-medium"
+                            >
+                              {data?.contract?.address &&
+                                formatAddress(data.contract.address)}
+                            </a>
+                          </div>
+                          <div className="flex justify-between mt-2">
+                            Token ID
+                            <a
+                              href={data?.tokenUri?.raw}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sm text-blue-600 font-medium"
+                            >
+                              {data?.tokenId}
+                            </a>
+                          </div>
+                          <div className="flex justify-between mt-2">
+                            Token Standard
+                            <span>{data?.tokenType}</span>
+                          </div>
+                        </div>
                       </Disclosure.Panel>
                     </>
                   )}

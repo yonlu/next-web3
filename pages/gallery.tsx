@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, FormEvent } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react';
 import {
@@ -35,6 +35,31 @@ const filters = [
       { value: 'clouds', label: 'clouds', checked: false },
       { value: 'sonora', label: 'sonora', checked: false },
       { value: 'casino', label: 'casino', checked: false },
+    ],
+  },
+  {
+    id: 'core',
+    name: 'Core',
+    options: [
+      { value: 'gyaru', label: 'gyaru', checked: false },
+      { value: 'hypebeast', label: 'hypebeast', checked: false },
+      { value: 'prep', label: 'prep', checked: false },
+      { value: 'hypebeast-gyaru', label: 'hypebeast-gyaru', checked: false },
+      { value: 'prep-gyaru', label: 'prep-gyaru', checked: false },
+      { value: 'lolita', label: 'lolita', checked: false },
+      { value: 'lolita-gyaru', label: 'lolita-gyaru', checked: false },
+      { value: 'harajuku', label: 'harajuku', checked: false },
+      { value: 'harajuku-gyaru', label: 'harajuku-gyaru', checked: false },
+      { value: 'lolita-prep', label: 'lolita-prep', checked: false },
+      { value: 'prep-hypebeast', label: 'prep-hypebeast', checked: false },
+      { value: 'lolita-hypebeast', label: 'lolita-hypebeast', checked: false },
+      { value: 'prep-harajuku', label: 'prep-harajuku', checked: false },
+      {
+        value: 'hypebeast-harajuku',
+        label: 'hypebeast-harajuku',
+        checked: false,
+      },
+      { value: 'lolita-harajuku', label: 'lolita-harajuku', checked: false },
     ],
   },
 ];
@@ -109,8 +134,9 @@ export default function Gallery() {
     isLoading: isLoadingCollection,
     fetchNextPage,
   } = useInfiniteQuery(['nftCollection'], fetchCollection, {
-    getNextPageParam: (lastPage, pages) => lastPage.pageKey,
+    getNextPageParam: (lastPage) => lastPage.pageKey,
     refetchOnWindowFocus: false,
+    keepPreviousData: true,
   });
 
   const handleFormChange = () => {
@@ -120,6 +146,29 @@ export default function Gallery() {
     };
     setFilterOptions(newFilter);
   };
+
+  const renderCollection = () =>
+    collection?.pages.map((page) => {
+      return page.nfts?.map((token: Nft) => {
+        return (
+          <Link
+            href={`tokens/${token?.tokenId}`}
+            key={`${token?.contract?.address} - ${token?.tokenId}`}
+          >
+            <a>
+              <div className="max-w-[16rem] bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
+                <div>
+                  <img src={token?.media[0]?.gateway} alt="" />
+                </div>
+                <div className="px-4 py-3 sm:p-2">
+                  <div className="w-[80%]">{token?.title}</div>
+                </div>
+              </div>
+            </a>
+          </Link>
+        );
+      });
+    });
 
   useEffect(() => {
     const DEBOUNCE_TIMER = 250;
@@ -139,7 +188,7 @@ export default function Gallery() {
   return (
     <>
       <Navbar />
-      <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+      <div className="w-full">
         <div>
           {/* Mobile filter dialog */}
           <Transition.Root show={mobileFiltersOpen} as={Fragment}>
@@ -251,7 +300,7 @@ export default function Gallery() {
             </Dialog>
           </Transition.Root>
 
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <main className="w-full px-4 sm:px-6 lg:px-8">
             <div className="relative z-10 flex items-baseline justify-between pt-24 pb-6 border-b border-gray-200">
               <div className="flex items-center">
                 <Menu as="div" className="relative inline-block text-left">
@@ -274,7 +323,7 @@ export default function Gallery() {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Items className="origin-top-left absolute left-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         {sortOptions.map((option) => (
                           <Menu.Item key={option.name}>
@@ -324,7 +373,10 @@ export default function Gallery() {
 
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-10">
                 {/* Filters */}
-                <form onChange={handleFormChange} className="hidden lg:block">
+                <form
+                  onChange={handleFormChange}
+                  className="sticky top-0 h-max hidden lg:block"
+                >
                   {filters.map((section) => (
                     <Disclosure
                       as="div"
@@ -384,41 +436,13 @@ export default function Gallery() {
                   ))}
                 </form>
 
-                {/* Product grid */}
+                {/* Nft card grid */}
                 <div className="lg:col-span-3">
-                  {/* Replace with your content */}
-                  <div className="border-4 border-dashed border-gray-200 rounded-lg h-full">
+                  <div className="h-full">
                     <div className="flex flex-wrap justify-around gap-3">
-                      {collection?.pages &&
-                        collection?.pages.map((page) => {
-                          return page.nfts?.map((token: Nft) => (
-                            <Link
-                              href={`tokens/${token?.tokenId}`}
-                              key={`${token?.contract?.address} - ${token?.tokenId}`}
-                            >
-                              <a>
-                                <div className="max-w-[16rem] bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
-                                  <div>
-                                    {/* Content goes here */}
-                                    <img
-                                      src={token?.media[0]?.gateway}
-                                      alt=""
-                                    />
-                                  </div>
-                                  <div className="px-4 py-3 sm:p-2">
-                                    <div className="w-[80%]">
-                                      {token?.title}
-                                    </div>
-                                    {/* Content goes here */}
-                                  </div>
-                                </div>
-                              </a>
-                            </Link>
-                          ));
-                        })}
+                      {collection?.pages && renderCollection()}
                     </div>
                   </div>
-                  {/* /End replace */}
                 </div>
               </div>
             </section>

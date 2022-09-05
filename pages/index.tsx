@@ -36,7 +36,7 @@ const Home: NextPage = () => {
 
   const { data, write } = useContractWrite(config);
 
-  const { isLoading, isSuccess } = useWaitForTransaction({
+  const { isLoading } = useWaitForTransaction({
     hash: data?.hash,
   });
 
