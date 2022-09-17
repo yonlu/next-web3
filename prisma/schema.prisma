@@ -1,15 +1,19 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
   referentialIntegrity = "prisma"
 }
 
 model Nft {
-  id  String  @id
-  title String  @db.VarChar(255)
+  id               String @id
+  title            String @db.VarChar(255)
+  token_id         String @db.VarChar(255)
+  token_type       String @db.VarChar(255)
+  contract_address String @db.VarChar(255)
+  attributes       Json   @db.Json()
 }

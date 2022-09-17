@@ -9,9 +9,10 @@ import {
   ViewColumnsIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
-import { Network, Alchemy, Nft } from 'alchemy-sdk';
+import { Network, Alchemy, Nft, NftContractNftsResponse } from 'alchemy-sdk';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
+import axios from 'axios';
 
 import { Navbar } from '../components/Navbar';
 import { classNames, debounce } from '../utils/helpers';
@@ -76,7 +77,9 @@ const miladyContract = {
   addressOrName: '0x5Af0D9827E0c53E4799BB226655A1de152A425a5',
 };
 
-async function fetchCollection({ pageParam = '0' }) {
+async function fetchCollection({
+  pageParam = '0',
+}): Promise<NftContractNftsResponse> {
   return alchemy.nft.getNftsForContract(miladyContract.addressOrName, {
     pageKey: pageParam,
     omitMetadata: false,
@@ -104,6 +107,19 @@ async function fetchFoo(
       `${bar}`
   ).then((response) => response.json());
   return data;
+}
+
+async function postNft(nft: Nft | undefined, attributes?: any) {
+  await axios.post('/api/test', {
+    ...nft,
+    attributes,
+  });
+}
+
+async function postMultipleNft(nfts: Nft[] | undefined) {
+  await axios.post('/api/test', {
+    nfts,
+  });
 }
 
 export default function Gallery() {
@@ -135,8 +151,6 @@ export default function Gallery() {
     fetchNextPage,
   } = useInfiniteQuery(['nftCollection'], fetchCollection, {
     getNextPageParam: (lastPage) => lastPage.pageKey,
-    refetchOnWindowFocus: false,
-    keepPreviousData: true,
   });
 
   const handleFormChange = () => {
@@ -189,6 +203,11 @@ export default function Gallery() {
     <>
       <Navbar />
       <div className="w-full">
+        {collection?.pages && (
+          <button onClick={() => postMultipleNft(collection?.pages[0].nfts)}>
+            Click me
+          </button>
+        )}
         <div>
           {/* Mobile filter dialog */}
           <Transition.Root show={mobileFiltersOpen} as={Fragment}>

@@ -8,9 +8,9 @@ function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ');
 }
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   return (
-    <Disclosure as="nav" className="bg-white shadow">
+    <Disclosure as="div" className="bg-white shadow">
       {({ open }) => (
         <>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
