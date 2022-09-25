@@ -10,12 +10,13 @@ import {
   XMarkIcon,
 } from '@heroicons/react/20/solid';
 import { Network, Alchemy, Nft, NftContractNftsResponse } from 'alchemy-sdk';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
 import { Navbar } from '../components/Navbar';
 import { classNames, debounce } from '../utils/helpers';
+import { GalleryGrid } from '../components/GalleryGrid';
 
 const sortOptions = [
   { name: 'Newest', href: '#', current: false },
@@ -87,28 +88,6 @@ async function fetchCollection({
   });
 }
 
-async function fetchFoo(
-  pageParam: string,
-  contractAddress?: string,
-  startToken?: string,
-  filterOptions?: any
-) {
-  let bar = '';
-  for (const [key, value] of Object.entries(filterOptions)) {
-    bar += `${key}=${value}&`;
-  }
-
-  const data = await fetch(
-    `/api/collection?` +
-      `pageParam=${pageParam}&` +
-      `contractAddress=${contractAddress}&` +
-      `startToken=${startToken}&` +
-      `limit=${12}&` +
-      `${bar}`
-  ).then((response) => response.json());
-  return data;
-}
-
 async function postNft(nft: Nft | undefined, attributes?: any) {
   await axios.post('/api/test', {
     ...nft,
@@ -122,28 +101,21 @@ async function postMultipleNft(nfts: Nft[] | undefined) {
   });
 }
 
+async function fetchNfts(attributesFilter: any) {
+  const response = await axios.get('/api/filter', {
+    params: {
+      Background: attributesFilter.Background,
+      Core: attributesFilter.Core,
+    },
+  });
+  return response.data;
+}
+
 export default function Gallery() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [filterOptions, setFilterOptions] = useState({});
 
-  const { register, watch, getValues } = useForm();
-
-  // const {
-  //   data,
-  //   isLoading,
-  //   fetchNextPage: fetchNextFoo,
-  // } = useInfiniteQuery(
-  //   ['foo'],
-  //   ({ pageParam = '0' }) =>
-  //     fetchFoo(pageParam, miladyContract.addressOrName, '0', {
-  //       Background: 'sunset',
-  //     }),
-  //   {
-  //     getNextPageParam: (lastPage, pages) => lastPage.nextToken,
-  //     refetchOnWindowFocus: false,
-  //     enabled: false,
-  //   }
-  // );
+  const { register, getValues } = useForm();
 
   const {
     data: collection,
@@ -153,36 +125,14 @@ export default function Gallery() {
     getNextPageParam: (lastPage) => lastPage.pageKey,
   });
 
-  const handleFormChange = () => {
-    const [value] = getValues('Background');
-    const newFilter = {
-      value,
-    };
-    setFilterOptions(newFilter);
-  };
+  const { data, isLoading } = useQuery(['nftFiltered', filterOptions], () =>
+    fetchNfts(filterOptions)
+  );
 
-  const renderCollection = () =>
-    collection?.pages.map((page) => {
-      return page.nfts?.map((token: Nft) => {
-        return (
-          <Link
-            href={`tokens/${token?.tokenId}`}
-            key={`${token?.contract?.address} - ${token?.tokenId}`}
-          >
-            <a>
-              <div className="max-w-[16rem] bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
-                <div>
-                  <img src={token?.media[0]?.gateway} alt="" />
-                </div>
-                <div className="px-4 py-3 sm:p-2">
-                  <div className="w-[80%]">{token?.title}</div>
-                </div>
-              </div>
-            </a>
-          </Link>
-        );
-      });
-    });
+  const handleFormChange = () => {
+    const values = getValues();
+    setFilterOptions(values);
+  };
 
   useEffect(() => {
     const DEBOUNCE_TIMER = 250;
@@ -196,17 +146,12 @@ export default function Gallery() {
     );
   }, [fetchNextPage]);
 
-  // if (isLoading) return <span>Loading...</span>;
-  if (isLoadingCollection) return <span>Loading Collection...</span>;
-
   return (
     <>
       <Navbar />
       <div className="w-full">
         {collection?.pages && (
-          <button onClick={() => postMultipleNft(collection?.pages[0].nfts)}>
-            Click me
-          </button>
+          <button onClick={() => fetchNfts(filterOptions)}>Click me</button>
         )}
         <div>
           {/* Mobile filter dialog */}
@@ -437,7 +382,7 @@ export default function Gallery() {
                                     type="checkbox"
                                     defaultChecked={option.checked}
                                     className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
-                                    {...register(`Background`)}
+                                    {...register(`${section.name}`)}
                                   />
                                   <label
                                     htmlFor={`filter-${section.id}-${optionIdx}`}
@@ -456,13 +401,15 @@ export default function Gallery() {
                 </form>
 
                 {/* Nft card grid */}
-                <div className="lg:col-span-3">
-                  <div className="h-full">
-                    <div className="flex flex-wrap justify-around gap-3">
-                      {collection?.pages && renderCollection()}
-                    </div>
-                  </div>
-                </div>
+                {isLoading || isLoadingCollection ? (
+                  <span>Loading...</span>
+                ) : (
+                  <GalleryGrid
+                    nftCollection={collection}
+                    nftFilteredCollection={data}
+                    filterOptions={filterOptions}
+                  />
+                )}
               </div>
             </section>
           </main>

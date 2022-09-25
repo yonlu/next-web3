@@ -10,10 +10,11 @@ datasource db {
 }
 
 model Nft {
-  id               String @id
+  id               String @id @default(uuid())
   title            String @db.VarChar(255)
   token_id         String @db.VarChar(255)
   token_type       String @db.VarChar(255)
   contract_address String @db.VarChar(255)
+  img_src          String @db.VarChar(255)
   attributes       Json   @db.Json()
 }

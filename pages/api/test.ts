@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
-import { Nft } from 'alchemy-sdk';
+import { Alchemy, Network, Nft } from 'alchemy-sdk';
 
 interface NftAttributes {
   [key: string]: string;
@@ -11,6 +11,24 @@ interface FormattedNft extends Nft {
 }
 
 const prisma = new PrismaClient();
+
+const settings = {
+  apiKey: process.env.ALCHEMY_API,
+  network: Network.ETH_MAINNET, // Replace with your network.
+  maxRetries: 10,
+};
+
+const alchemy = new Alchemy(settings);
+
+async function fetchCollection() {
+  return alchemy.nft.getNftsForContract(
+    '0x5Af0D9827E0c53E4799BB226655A1de152A425a5',
+    {
+      pageKey: '0',
+      omitMetadata: false,
+    }
+  );
+}
 
 function parseAttributes(nft: any) {
   const attributes = nft.rawMetadata?.attributes;
@@ -49,6 +67,7 @@ async function createNft(nft: FormattedNft) {
           token_type: tokenType,
           contract_address: contract.address,
           attributes: formattedAttributes,
+          img_src: nft.media[0].gateway,
         },
       });
     }
@@ -58,6 +77,7 @@ async function createNft(nft: FormattedNft) {
 }
 
 async function createMultipleNft(nfts: FormattedNft[]) {
+  console.log(nfts);
   const parsedNfts = nfts.map((nft) => {
     return {
       id: nft.tokenId,
@@ -66,6 +86,7 @@ async function createMultipleNft(nfts: FormattedNft[]) {
       token_type: nft.tokenType.toString(),
       contract_address: nft.contract.address,
       attributes: nft.formattedAttributes,
+      img_src: nft.media[0].gateway,
     };
   });
 
@@ -109,11 +130,9 @@ export default async function handler(
 ) {
   try {
     if (req.method === 'GET') {
-      const result = await main();
-      return res.status(200).json(result);
     } else if (req.method === 'POST') {
-      const { nfts } = req.body;
-      const parsedNfts = nfts.map((nft: Nft) => parseAttributes(nft));
+      const result = await fetchCollection();
+      const parsedNfts = result.nfts.map((nft: Nft) => parseAttributes(nft));
       await createMultipleNft(parsedNfts);
     }
   } catch (error) {
@@ -122,6 +141,4 @@ export default async function handler(
       .status(500)
       .json({ error: 'Error fetching collection', success: false });
   }
-
-  return res.status(200).json({ hello: 'ok' });
 }
