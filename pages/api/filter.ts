@@ -3,7 +3,17 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function main(filterAttributes: any) {
+async function fetchNoFilter() {
+  let selectedNfts;
+  try {
+    selectedNfts = await prisma.nft.findMany();
+  } catch (err) {
+    console.error(err);
+  }
+  return selectedNfts;
+}
+
+async function fetchWithFilter(filterAttributes: any) {
   let backgrounds = filterAttributes['Background[]'] ?? [''];
   let cores = filterAttributes['Core[]'] ?? [''];
 
@@ -49,7 +59,12 @@ export default async function handler(
 ) {
   try {
     if (req.method === 'GET') {
-      const result = await main(req.query);
+      let result;
+      if (Object.keys(req.query).length === 0) {
+        result = await fetchNoFilter();
+      } else {
+        result = await fetchWithFilter(req.query);
+      }
       return res.status(200).json(result);
     }
   } catch (error) {

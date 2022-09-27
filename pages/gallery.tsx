@@ -1,5 +1,4 @@
-import { Fragment, useState, useEffect } from 'react';
-import Link from 'next/link';
+import { Fragment, useState, useEffect, useCallback } from 'react';
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react';
 import {
   ChevronDownIcon,
@@ -9,14 +8,15 @@ import {
   ViewColumnsIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
-import { Network, Alchemy, Nft, NftContractNftsResponse } from 'alchemy-sdk';
+import { Network, Alchemy, Nft } from 'alchemy-sdk';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
-import { Navbar } from '../components/Navbar';
 import { classNames, debounce } from '../utils/helpers';
+import { Navbar } from '../components/Navbar';
 import { GalleryGrid } from '../components/GalleryGrid';
+import { SkeletonCard } from '../components/SkeletonCard';
 
 const sortOptions = [
   { name: 'Newest', href: '#', current: false },
@@ -78,16 +78,6 @@ const miladyContract = {
   addressOrName: '0x5Af0D9827E0c53E4799BB226655A1de152A425a5',
 };
 
-async function fetchCollection({
-  pageParam = '0',
-}): Promise<NftContractNftsResponse> {
-  return alchemy.nft.getNftsForContract(miladyContract.addressOrName, {
-    pageKey: pageParam,
-    omitMetadata: false,
-    pageSize: 12,
-  });
-}
-
 async function postNft(nft: Nft | undefined, attributes?: any) {
   await axios.post('/api/test', {
     ...nft,
@@ -101,7 +91,7 @@ async function postMultipleNft(nfts: Nft[] | undefined) {
   });
 }
 
-async function fetchNfts(attributesFilter: any) {
+async function fetchMiladies(attributesFilter?: any) {
   const response = await axios.get('/api/filter', {
     params: {
       Background: attributesFilter.Background,
@@ -112,22 +102,26 @@ async function fetchNfts(attributesFilter: any) {
 }
 
 export default function Gallery() {
+  const [isFilterActive, setIsFilterActive] = useState<boolean>(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [filterOptions, setFilterOptions] = useState({});
 
-  const { register, getValues } = useForm();
+  const { register, getValues, watch } = useForm();
 
-  const {
-    data: collection,
-    isLoading: isLoadingCollection,
-    fetchNextPage,
-  } = useInfiniteQuery(['nftCollection'], fetchCollection, {
-    getNextPageParam: (lastPage) => lastPage.pageKey,
-  });
-
-  const { data, isLoading } = useQuery(['nftFiltered', filterOptions], () =>
-    fetchNfts(filterOptions)
+  const { data, isLoading, fetchStatus } = useQuery(
+    ['nfts', filterOptions],
+    () => fetchMiladies(filterOptions)
   );
+
+  const handleFilterActive = useCallback((filters: any) => {
+    let active = false;
+    for (const k in filters) {
+      if (filters[k]?.length !== 0 || filters[k] !== 'undefined') {
+        active = true;
+      }
+    }
+    setIsFilterActive(active);
+  }, []);
 
   const handleFormChange = () => {
     const values = getValues();
@@ -140,19 +134,23 @@ export default function Gallery() {
       'scroll',
       debounce(function () {
         if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
-          fetchNextPage();
         }
       }, DEBOUNCE_TIMER)
     );
-  }, [fetchNextPage]);
+  }, []);
+
+  useEffect(() => {
+    handleFilterActive(filterOptions);
+  }, [filterOptions, handleFilterActive]);
 
   return (
     <>
       <Navbar />
+
       <div className="w-full">
-        {collection?.pages && (
-          <button onClick={() => fetchNfts(filterOptions)}>Click me</button>
-        )}
+        <code>Filter Options: {JSON.stringify(filterOptions)}</code>
+      </div>
+      <div className="w-full">
         <div>
           {/* Mobile filter dialog */}
           <Transition.Root show={mobileFiltersOpen} as={Fragment}>
@@ -401,14 +399,10 @@ export default function Gallery() {
                 </form>
 
                 {/* Nft card grid */}
-                {isLoading || isLoadingCollection ? (
-                  <span>Loading...</span>
+                {isLoading && fetchStatus === 'fetching' ? (
+                  <SkeletonCard />
                 ) : (
-                  <GalleryGrid
-                    nftCollection={collection}
-                    nftFilteredCollection={data}
-                    filterOptions={filterOptions}
-                  />
+                  <GalleryGrid nftCollection={data} />
                 )}
               </div>
             </section>
