@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
+import NextCors from 'nextjs-cors';
 
 const prisma = new PrismaClient();
 
@@ -17,7 +18,6 @@ async function fetchNoFilter() {
 }
 
 async function fetchWithFilter(filterAttributes: any) {
-  console.log(filterAttributes);
   let backgrounds = filterAttributes['Background[]'] ?? [''];
   let cores = filterAttributes['Core[]'] ?? [''];
   let pageParam = parseInt(filterAttributes.pageParam);
@@ -71,11 +71,19 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Run the cors middleware
+  // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
+  await NextCors(req, res, {
+    // Options
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    origin: '*',
+    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  });
+
   try {
     if (req.method === 'GET') {
       let result;
       if (Object.keys(req.query).length === 0) {
-        console.log(req.query);
         result = await fetchNoFilter();
       } else {
         result = await fetchWithFilter(req.query);
