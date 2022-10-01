@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useCallback } from 'react';
+import { Fragment, useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react';
 import {
   ChevronDownIcon,
@@ -8,15 +8,12 @@ import {
   ViewColumnsIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
-import { Network, Alchemy, Nft } from 'alchemy-sdk';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
-import { classNames, debounce } from '../utils/helpers';
-import { Navbar } from '../components/Navbar';
-import { GalleryGrid } from '../components/GalleryGrid';
-import { SkeletonCard } from '../components/SkeletonCard';
+import { classNames } from '../utils/helpers';
+import { GalleryGrid, Navbar, SkeletonCard } from '../components';
 
 const sortOptions = [
   { name: 'Newest', href: '#', current: false },
@@ -66,51 +63,37 @@ const filters = [
   },
 ];
 
-const settings = {
-  apiKey: process.env.ALCHEMY_API,
-  network: Network.ETH_MAINNET, // Replace with your network.
-  maxRetries: 10,
-};
-
-const alchemy = new Alchemy(settings);
-
-const miladyContract = {
-  addressOrName: '0x5Af0D9827E0c53E4799BB226655A1de152A425a5',
-};
-
-async function postNft(nft: Nft | undefined, attributes?: any) {
-  await axios.post('/api/test', {
-    ...nft,
-    attributes,
-  });
+async function postMultipleNft() {
+  await axios.post('/api/test');
 }
 
-async function postMultipleNft(nfts: Nft[] | undefined) {
-  await axios.post('/api/test', {
-    nfts,
-  });
-}
-
-async function fetchMiladies(attributesFilter?: any) {
+async function fetchMiladies(key: any, attributesFilter?: any) {
   const response = await axios.get('/api/filter', {
     params: {
       Background: attributesFilter.Background,
       Core: attributesFilter.Core,
+      pageParam: key ?? 0,
     },
   });
   return response.data;
 }
 
-export default function Gallery() {
+const Gallery = () => {
   const [isFilterActive, setIsFilterActive] = useState<boolean>(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [filterOptions, setFilterOptions] = useState({});
+  const [isVisible, setIsVisible] = useState(false);
+
+  const myRef = useRef<HTMLElement>(null);
 
   const { register, getValues, watch } = useForm();
 
-  const { data, isLoading, fetchStatus } = useQuery(
+  const { data, isLoading, fetchStatus, fetchNextPage } = useInfiniteQuery(
     ['nfts', filterOptions],
-    () => fetchMiladies(filterOptions)
+    ({ queryKey, pageParam = 0 }) => fetchMiladies(pageParam, queryKey[1]),
+    {
+      getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
+    }
   );
 
   const handleFilterActive = useCallback((filters: any) => {
@@ -129,27 +112,29 @@ export default function Gallery() {
   };
 
   useEffect(() => {
-    const DEBOUNCE_TIMER = 250;
-    window.addEventListener(
-      'scroll',
-      debounce(function () {
-        if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
-        }
-      }, DEBOUNCE_TIMER)
-    );
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      setIsVisible(entry.isIntersecting);
+    });
+
+    if (myRef.current !== null) {
+      observer.observe(myRef.current);
+    }
   }, []);
 
   useEffect(() => {
     handleFilterActive(filterOptions);
   }, [filterOptions, handleFilterActive]);
 
+  useEffect(() => {
+    if (isVisible) {
+      fetchNextPage();
+    }
+  }, [isVisible, fetchNextPage]);
+
   return (
     <>
       <Navbar />
-
-      <div className="w-full">
-        <code>Filter Options: {JSON.stringify(filterOptions)}</code>
-      </div>
       <div className="w-full">
         <div>
           {/* Mobile filter dialog */}
@@ -329,15 +314,11 @@ export default function Gallery() {
             </div>
 
             <section aria-labelledby="products-heading" className="pt-6 pb-24">
-              <h2 id="products-heading" className="sr-only">
-                Products
-              </h2>
-
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-10">
                 {/* Filters */}
                 <form
                   onChange={handleFormChange}
-                  className="sticky top-0 h-max hidden lg:block"
+                  className="sticky top-0 h-max hidden lg:block overflow-y-scroll max-h-screen"
                 >
                   {filters.map((section) => (
                     <Disclosure
@@ -407,8 +388,12 @@ export default function Gallery() {
               </div>
             </section>
           </main>
+
+          <footer ref={myRef}>Footer</footer>
         </div>
       </div>
     </>
   );
-}
+};
+
+export default Gallery;

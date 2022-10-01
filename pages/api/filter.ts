@@ -6,7 +6,10 @@ const prisma = new PrismaClient();
 async function fetchNoFilter() {
   let selectedNfts;
   try {
-    selectedNfts = await prisma.nft.findMany();
+    selectedNfts = await prisma.nft.findMany({
+      skip: 0,
+      take: 15,
+    });
   } catch (err) {
     console.error(err);
   }
@@ -14,8 +17,10 @@ async function fetchNoFilter() {
 }
 
 async function fetchWithFilter(filterAttributes: any) {
+  console.log(filterAttributes);
   let backgrounds = filterAttributes['Background[]'] ?? [''];
   let cores = filterAttributes['Core[]'] ?? [''];
+  let pageParam = parseInt(filterAttributes.pageParam);
 
   if (typeof backgrounds === 'string') {
     backgrounds = new Array(filterAttributes['Background[]']);
@@ -25,7 +30,18 @@ async function fetchWithFilter(filterAttributes: any) {
     cores = new Array(filterAttributes['Core[]']);
   }
 
+  if (backgrounds[0] === '' && cores[0] === '') {
+    const selectedNft = await prisma.nft.findMany({
+      skip: pageParam,
+      take: 15,
+    });
+
+    return { selectedNft, nextCursor: 15 + pageParam };
+  }
+
   const selectedNft = await prisma.nft.findMany({
+    skip: pageParam,
+    take: 15,
     where: {
       OR: [
         ...backgrounds?.map((background: string) => {
@@ -48,9 +64,7 @@ async function fetchWithFilter(filterAttributes: any) {
     },
   });
 
-  if (selectedNft !== null) {
-    return selectedNft;
-  }
+  return { selectedNft, nextCursor: 15 + pageParam };
 }
 
 export default async function handler(
@@ -61,6 +75,7 @@ export default async function handler(
     if (req.method === 'GET') {
       let result;
       if (Object.keys(req.query).length === 0) {
+        console.log(req.query);
         result = await fetchNoFilter();
       } else {
         result = await fetchWithFilter(req.query);

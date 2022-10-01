@@ -9,8 +9,8 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({ nftCollection }) => {
     <div className="lg:col-span-3">
       <div className="h-full">
         <div className="flex flex-wrap justify-around gap-3">
-          {nftCollection &&
-            nftCollection?.map((token: any) => {
+          {nftCollection?.pages?.map((page: any) => {
+            return page?.selectedNft?.map((token: any) => {
               return (
                 <Link
                   href={`tokens/${token?.id}`}
@@ -28,7 +28,8 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({ nftCollection }) => {
                   </a>
                 </Link>
               );
-            })}
+            });
+          })}
         </div>
       </div>
     </div>

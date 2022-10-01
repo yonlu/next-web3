@@ -24,7 +24,7 @@ async function fetchCollection() {
   return alchemy.nft.getNftsForContract(
     '0x5Af0D9827E0c53E4799BB226655A1de152A425a5',
     {
-      pageKey: '0',
+      pageKey: '200',
       omitMetadata: false,
     }
   );
@@ -48,39 +48,11 @@ function parseAttributes(nft: any) {
   return nftWithAttributes;
 }
 
-async function createNft(nft: FormattedNft) {
-  const { tokenId, title, tokenType, contract, formattedAttributes } = nft;
-
-  try {
-    const nftExists = await prisma.nft.findFirst({
-      where: {
-        token_id: nft.tokenId,
-      },
-    });
-
-    if (!nftExists) {
-      await prisma.nft.create({
-        data: {
-          id: tokenId,
-          token_id: tokenId,
-          title: title,
-          token_type: tokenType,
-          contract_address: contract.address,
-          attributes: formattedAttributes,
-          img_src: nft.media[0].gateway,
-        },
-      });
-    }
-  } catch (err) {
-    console.error('WARNING: ', err);
-  }
-}
-
 async function createMultipleNft(nfts: FormattedNft[]) {
   console.log(nfts);
   const parsedNfts = nfts.map((nft) => {
     return {
-      id: nft.tokenId,
+      id: parseInt(nft.tokenId),
       token_id: nft.tokenId,
       title: nft.title,
       token_type: nft.tokenType.toString(),
