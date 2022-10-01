@@ -17,7 +17,6 @@ async function fetchNoFilter() {
 }
 
 async function fetchWithFilter(filterAttributes: any) {
-  console.log(filterAttributes);
   let backgrounds = filterAttributes['Background[]'] ?? [''];
   let cores = filterAttributes['Core[]'] ?? [''];
   let pageParam = parseInt(filterAttributes.pageParam);
@@ -75,7 +74,6 @@ export default async function handler(
     if (req.method === 'GET') {
       let result;
       if (Object.keys(req.query).length === 0) {
-        console.log(req.query);
         result = await fetchNoFilter();
       } else {
         result = await fetchWithFilter(req.query);
