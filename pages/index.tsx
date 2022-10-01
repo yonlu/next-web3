@@ -1,31 +1,16 @@
 import { useState } from 'react';
 import { NextPage } from 'next';
-import {
-  useContractWrite,
-  useContractReads,
-  usePrepareContractWrite,
-  useWaitForTransaction,
-} from 'wagmi';
-import { NFTData } from '@web3-ui/components';
-import { Result } from 'ethers/lib/utils';
+import { useContractWrite, usePrepareContractWrite } from 'wagmi';
 import Image from 'next/image';
-import base64 from 'base-64';
 
 import { Faq, Footer } from '../components';
 import cardTwo from '../public/card2.png';
 import cardThree from '../public/card3.png';
 import NaturedDevelopers from '../abis/NaturedDevelopers.json';
-import { Card } from '../components/Card';
 import { Navbar } from '../components/Navbar';
-
-const naturedDevelopersContract = {
-  addressOrName: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
-  contractInterface: NaturedDevelopers.abi,
-};
 
 const Home: NextPage = () => {
   const [quantity, setQuantity] = useState<number>(1);
-  const [gallery, setGallery] = useState<NFTData[] | undefined>(undefined);
 
   const { config } = usePrepareContractWrite({
     addressOrName: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
@@ -35,62 +20,6 @@ const Home: NextPage = () => {
   });
 
   const { data, write } = useContractWrite(config);
-
-  const { isLoading } = useWaitForTransaction({
-    hash: data?.hash,
-  });
-
-  useContractReads({
-    contracts: [
-      {
-        ...naturedDevelopersContract,
-        functionName: 'name',
-      },
-      {
-        ...naturedDevelopersContract,
-        functionName: 'symbol',
-      },
-      {
-        ...naturedDevelopersContract,
-        functionName: 'tokenURI',
-        args: '0',
-      },
-      {
-        ...naturedDevelopersContract,
-        functionName: 'tokenURI',
-        args: '1',
-      },
-      {
-        ...naturedDevelopersContract,
-        functionName: 'tokenURI',
-        args: '2',
-      },
-    ],
-    onSuccess: (data) => formatResults(data),
-  });
-
-  const formatResults = (readData: Result[]) => {
-    const [assetContractName, assetContractSymbol, ...tokenURIs] = readData;
-
-    const results = tokenURIs.map((data) => {
-      const [, base64Metadata] = data.split(',');
-      const { image: imageUrl, name } = JSON.parse(
-        base64.decode(base64Metadata)
-      );
-
-      const responseMetadata = {
-        tokenId: '1',
-        imageUrl,
-        name,
-        assetContractSymbol: assetContractSymbol.toString(),
-        assetContractName: assetContractName.toString(),
-      };
-
-      return responseMetadata;
-    });
-
-    setGallery(results);
-  };
 
   return (
     <>
@@ -150,7 +79,7 @@ const Home: NextPage = () => {
                     <div className="flex-none">
                       <button
                         onClick={() => write?.()}
-                        disabled={!write || isLoading}
+                        disabled={!write}
                         type="button"
                         className="bg-indigo-500 hover:bg-indigo-600 text-white w-36 h-12 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-semibold font-display rounded-md shadow-sm   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-colors"
                       >
@@ -293,27 +222,6 @@ const Home: NextPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
-
-          <section
-            className="gallery container relative mx-auto py-10"
-            id="gallery"
-          >
-            <h3 className="mb-4 text-center text-3xl font-semibold underline decoration-indigo-500/80 lg:text-left xl:text-4xl">
-              Gallery
-            </h3>
-            <div className="flex flex-wrap justify-center gap-3">
-              {gallery &&
-                gallery.map((item) => {
-                  return (
-                    <Card
-                      key={item.name}
-                      imageUrl={item.imageUrl}
-                      name={item.name}
-                    />
-                  );
-                })}
             </div>
           </section>
 

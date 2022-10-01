@@ -1,5 +1,4 @@
-import { Fragment, useState, useEffect } from 'react';
-import Link from 'next/link';
+import { Fragment, useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react';
 import {
   ChevronDownIcon,
@@ -9,12 +8,12 @@ import {
   ViewColumnsIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid';
-import { Network, Alchemy, Nft } from 'alchemy-sdk';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
+import axios from 'axios';
 
-import { Navbar } from '../components/Navbar';
-import { classNames, debounce } from '../utils/helpers';
+import { classNames } from '../utils/helpers';
+import { GalleryGrid, Navbar, SkeletonCard } from '../components';
 
 const sortOptions = [
   { name: 'Newest', href: '#', current: false },
@@ -64,126 +63,74 @@ const filters = [
   },
 ];
 
-const settings = {
-  apiKey: process.env.ALCHEMY_API,
-  network: Network.ETH_MAINNET, // Replace with your network.
-  maxRetries: 10,
-};
+async function postMultipleNft() {
+  await axios.post('/api/test');
+}
 
-const alchemy = new Alchemy(settings);
-
-const miladyContract = {
-  addressOrName: '0x5Af0D9827E0c53E4799BB226655A1de152A425a5',
-};
-
-async function fetchCollection({ pageParam = '0' }) {
-  return alchemy.nft.getNftsForContract(miladyContract.addressOrName, {
-    pageKey: pageParam,
-    omitMetadata: false,
-    pageSize: 12,
+async function fetchMiladies(key: any, attributesFilter?: any) {
+  const response = await axios.get('/api/filter', {
+    params: {
+      Background: attributesFilter.Background,
+      Core: attributesFilter.Core,
+      pageParam: key ?? 0,
+    },
   });
+  return response.data;
 }
 
-async function fetchFoo(
-  pageParam: string,
-  contractAddress?: string,
-  startToken?: string,
-  filterOptions?: any
-) {
-  let bar = '';
-  for (const [key, value] of Object.entries(filterOptions)) {
-    bar += `${key}=${value}&`;
-  }
-
-  const data = await fetch(
-    `/api/collection?` +
-      `pageParam=${pageParam}&` +
-      `contractAddress=${contractAddress}&` +
-      `startToken=${startToken}&` +
-      `limit=${12}&` +
-      `${bar}`
-  ).then((response) => response.json());
-  return data;
-}
-
-export default function Gallery() {
+const Gallery = () => {
+  const [isFilterActive, setIsFilterActive] = useState<boolean>(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [filterOptions, setFilterOptions] = useState({});
+  const [isVisible, setIsVisible] = useState(false);
 
-  const { register, watch, getValues } = useForm();
+  const myRef = useRef<HTMLElement>(null);
 
-  // const {
-  //   data,
-  //   isLoading,
-  //   fetchNextPage: fetchNextFoo,
-  // } = useInfiniteQuery(
-  //   ['foo'],
-  //   ({ pageParam = '0' }) =>
-  //     fetchFoo(pageParam, miladyContract.addressOrName, '0', {
-  //       Background: 'sunset',
-  //     }),
-  //   {
-  //     getNextPageParam: (lastPage, pages) => lastPage.nextToken,
-  //     refetchOnWindowFocus: false,
-  //     enabled: false,
-  //   }
-  // );
+  const { register, getValues, watch } = useForm();
 
-  const {
-    data: collection,
-    isLoading: isLoadingCollection,
-    fetchNextPage,
-  } = useInfiniteQuery(['nftCollection'], fetchCollection, {
-    getNextPageParam: (lastPage) => lastPage.pageKey,
-    refetchOnWindowFocus: false,
-    keepPreviousData: true,
-  });
+  const { data, isLoading, fetchStatus, fetchNextPage } = useInfiniteQuery(
+    ['nfts', filterOptions],
+    ({ queryKey, pageParam = 0 }) => fetchMiladies(pageParam, queryKey[1]),
+    {
+      getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
+    }
+  );
+
+  const handleFilterActive = useCallback((filters: any) => {
+    let active = false;
+    for (const k in filters) {
+      if (filters[k]?.length !== 0 || filters[k] !== 'undefined') {
+        active = true;
+      }
+    }
+    setIsFilterActive(active);
+  }, []);
 
   const handleFormChange = () => {
-    const [value] = getValues('Background');
-    const newFilter = {
-      value,
-    };
-    setFilterOptions(newFilter);
+    const values = getValues();
+    setFilterOptions(values);
   };
 
-  const renderCollection = () =>
-    collection?.pages.map((page) => {
-      return page.nfts?.map((token: Nft) => {
-        return (
-          <Link
-            href={`tokens/${token?.tokenId}`}
-            key={`${token?.contract?.address} - ${token?.tokenId}`}
-          >
-            <a>
-              <div className="max-w-[16rem] bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
-                <div>
-                  <img src={token?.media[0]?.gateway} alt="" />
-                </div>
-                <div className="px-4 py-3 sm:p-2">
-                  <div className="w-[80%]">{token?.title}</div>
-                </div>
-              </div>
-            </a>
-          </Link>
-        );
-      });
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      setIsVisible(entry.isIntersecting);
     });
 
-  useEffect(() => {
-    const DEBOUNCE_TIMER = 250;
-    window.addEventListener(
-      'scroll',
-      debounce(function () {
-        if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
-          fetchNextPage();
-        }
-      }, DEBOUNCE_TIMER)
-    );
-  }, [fetchNextPage]);
+    if (myRef.current !== null) {
+      observer.observe(myRef.current);
+    }
+  }, []);
 
-  // if (isLoading) return <span>Loading...</span>;
-  if (isLoadingCollection) return <span>Loading Collection...</span>;
+  useEffect(() => {
+    handleFilterActive(filterOptions);
+  }, [filterOptions, handleFilterActive]);
+
+  useEffect(() => {
+    if (isVisible) {
+      fetchNextPage();
+    }
+  }, [isVisible, fetchNextPage]);
 
   return (
     <>
@@ -367,15 +314,11 @@ export default function Gallery() {
             </div>
 
             <section aria-labelledby="products-heading" className="pt-6 pb-24">
-              <h2 id="products-heading" className="sr-only">
-                Products
-              </h2>
-
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-10">
                 {/* Filters */}
                 <form
                   onChange={handleFormChange}
-                  className="sticky top-0 h-max hidden lg:block"
+                  className="sticky top-0 h-max hidden lg:block overflow-y-scroll max-h-screen"
                 >
                   {filters.map((section) => (
                     <Disclosure
@@ -418,7 +361,7 @@ export default function Gallery() {
                                     type="checkbox"
                                     defaultChecked={option.checked}
                                     className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
-                                    {...register(`Background`)}
+                                    {...register(`${section.name}`)}
                                   />
                                   <label
                                     htmlFor={`filter-${section.id}-${optionIdx}`}
@@ -437,18 +380,20 @@ export default function Gallery() {
                 </form>
 
                 {/* Nft card grid */}
-                <div className="lg:col-span-3">
-                  <div className="h-full">
-                    <div className="flex flex-wrap justify-around gap-3">
-                      {collection?.pages && renderCollection()}
-                    </div>
-                  </div>
-                </div>
+                {isLoading && fetchStatus === 'fetching' ? (
+                  <SkeletonCard />
+                ) : (
+                  <GalleryGrid nftCollection={data} />
+                )}
               </div>
             </section>
           </main>
+
+          <footer ref={myRef}>Footer</footer>
         </div>
       </div>
     </>
   );
-}
+};
+
+export default Gallery;

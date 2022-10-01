@@ -1,4 +1,3 @@
-import { NETWORKS, Provider } from '@web3-ui/core';
 import type { AppProps } from 'next/app';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -9,7 +8,6 @@ import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
 import '../styles/globals.css';
-import { PreviewProvider } from '../hooks/usePreview';
 
 const { chains, provider } = configureChains(
   [chain.rinkeby],
@@ -34,11 +32,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     <QueryClientProvider client={queryClient}>
       <WagmiConfig client={wagmiClient}>
         <RainbowKitProvider chains={chains} showRecentTransactions={true}>
-          <Provider network={NETWORKS.rinkeby}>
-            <PreviewProvider>
-              <Component {...pageProps} />
-            </PreviewProvider>
-          </Provider>
+          <Component {...pageProps} />
         </RainbowKitProvider>
       </WagmiConfig>
       <ReactQueryDevtools initialIsOpen={false} />
