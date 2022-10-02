@@ -113,7 +113,7 @@ export default async function handler(
     console.error('Request error', error);
     res
       .status(500)
-      .json({ error: 'Error fetching collection', success: false });
+      .json({ error: `Error fetching collection, ${error}`, success: false });
   }
   res.end();
 }
