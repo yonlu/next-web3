@@ -12,6 +12,7 @@ import axios from 'axios';
 
 import { classNames } from '../utils/helpers';
 import { Navbar, SidebarFilter, SkeletonCard } from '../components';
+import { PrismaClient } from '@prisma/client';
 
 const sortOptions = [
   { name: 'Newest', href: '#', current: false },
@@ -240,11 +241,16 @@ const Gallery = ({ data }: any) => {
 export default Gallery;
 
 export async function getStaticProps() {
-  const { data } = await axios.get('http://localhost:3000/api/filter', {
-    params: {
-      pageParam: 0,
-    },
+  const prisma = new PrismaClient();
+
+  const nfts = await prisma.nft.findMany({
+    take: 15,
   });
+
+  const data = {
+    nfts,
+    nextCursor: 15,
+  };
 
   return { props: { data } };
 }
