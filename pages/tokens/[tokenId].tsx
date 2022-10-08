@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Network, Alchemy } from 'alchemy-sdk';
+import { Network, Alchemy, AssetTransfersCategory, fromHex } from 'alchemy-sdk';
 import { BigNumber, BigNumberish } from 'ethers';
 import { useQuery } from '@tanstack/react-query';
 import { Disclosure } from '@headlessui/react';
@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/20/solid';
 
 import { Navbar, Modal } from '../../components';
+import { classNames } from '../../utils/helpers';
 import miladyMakerIcon from '../../public/milady-maker.jpeg';
 
 const settings = {
@@ -40,8 +41,21 @@ async function fetchOwners(
     .then((res) => res.owners[0]);
 }
 
-function classNames(...classes: any) {
-  return classes.filter(Boolean).join(' ');
+async function fetchNftSales() {
+  const response = await alchemy.core.getAssetTransfers({
+    fromBlock: '0x0',
+    contractAddresses: [miladyContract.addressOrName],
+    category: [AssetTransfersCategory.ERC721],
+    excludeZeroValue: false,
+  });
+
+  const nftId = 0;
+
+  let txs = response.transfers.filter(
+    (txn) => fromHex(txn.erc721TokenId ?? '') === nftId
+  );
+  console.log(txs);
+  return txs;
 }
 
 const Token = () => {
@@ -59,6 +73,11 @@ const Token = () => {
     () => fetchOwners(miladyContract.addressOrName, BigNumber.from(tokenId))
   );
 
+  const { data: sales, isLoading: isLoadingSales } = useQuery(
+    ['nftSales'],
+    fetchNftSales
+  );
+
   const formatAddress = (address: string) => {
     const partOne = address.substring(0, 8);
     const partTwo = address.substring(38, 42);
@@ -74,6 +93,7 @@ const Token = () => {
 
   if (isLoading) return <span>Loading...</span>;
   if (isLoadingOwner) return <span>Loading...</span>;
+  if (isLoadingSales) return <span>Loading...</span>;
 
   return (
     <>

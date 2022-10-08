@@ -45,6 +45,9 @@ async function fetchNoFilter() {
 async function fetchWithFilter(filterAttributes: any) {
   let backgrounds = filterAttributes['Background[]'] ?? [''];
   let cores = filterAttributes['Core[]'] ?? [''];
+  let hairs = filterAttributes['Hair[]'] ?? [''];
+  let dripGrades = filterAttributes['Drip Grade[]'] ?? [''];
+  let earrings = filterAttributes['Earring[]'] ?? [''];
   let pageParam = parseInt(filterAttributes.pageParam);
 
   if (typeof backgrounds === 'string') {
@@ -55,7 +58,25 @@ async function fetchWithFilter(filterAttributes: any) {
     cores = new Array(filterAttributes['Core[]']);
   }
 
-  if (backgrounds[0] === '' && cores[0] === '') {
+  if (typeof hairs === 'string') {
+    hairs = new Array(filterAttributes['Hair[]']);
+  }
+
+  if (typeof dripGrades === 'string') {
+    dripGrades = new Array(filterAttributes['Drip Grade[]']);
+  }
+
+  if (typeof earrings === 'string') {
+    earrings = new Array(filterAttributes['Earring[]']);
+  }
+
+  if (
+    backgrounds[0] === '' &&
+    cores[0] === '' &&
+    hairs[0] === '' &&
+    dripGrades[0] === '' &&
+    earrings[0] === ''
+  ) {
     const selectedNft = await prisma.nft.findMany({
       skip: pageParam,
       take: 15,
@@ -85,6 +106,30 @@ async function fetchWithFilter(filterAttributes: any) {
             },
           };
         }),
+        ...dripGrades?.map((dripGrade: string) => {
+          return {
+            attributes: {
+              path: '$."Drip Grade"',
+              equals: dripGrade,
+            },
+          };
+        }),
+        ...earrings?.map((earring: string) => {
+          return {
+            attributes: {
+              path: '$.Earring',
+              equals: earring,
+            },
+          };
+        }),
+        ...hairs?.map((hair: string) => {
+          return {
+            attributes: {
+              path: '$.Hair',
+              equals: hair,
+            },
+          };
+        }),
       ],
     },
   });
@@ -105,6 +150,7 @@ export default async function handler(
       if (Object.keys(req.query).length === 0) {
         result = await fetchNoFilter();
       } else {
+        console.log(req.query);
         result = await fetchWithFilter(req.query);
       }
       return res.status(200).json(result);
